@@ -22,19 +22,27 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
   bool _isDarkMode = true;
   String _language = 'EN';
   String _geminiApiKey = '';
+  double _paperBalance = 10000.0;
+  List> _paperTrades = [];
 
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    _loadSettingsAndTrades();
   }
 
-  Future<void> _loadSettings() async {
+  Future<void> _loadSettingsAndTrades() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _isDarkMode = prefs.getBool('dark_mode') ?? true;
       _language = prefs.getString('app_lang') ?? 'EN';
       _geminiApiKey = prefs.getString('gemini_api_key') ?? '';
+      _paperBalance = prefs.getDouble('paper_balance') ?? 10000.0;
+      
+      final savedTrades = prefs.getString('paper_trades');
+      if (savedTrades != null) {
+        _paperTrades = List>.from(jsonDecode(savedTrades));
+      }
     });
   }
 
@@ -62,10 +70,31 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
     });
   }
 
+  Future<void> _addPaperTrade(Map<String, dynamic> trade) async {
+    setState(() {
+      _paperTrades.insert(0, trade);
+      if (_paperTrades.length > 50) {
+        _paperTrades.removeLast();
+      }
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('paper_trades', jsonEncode(_paperTrades));
+  }
+
+  Future<void> _resetPaperAccount() async {
+    setState(() {
+      _paperBalance = 10000.0;
+      _paperTrades.clear();
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('paper_balance', 10000.0);
+    await prefs.remove('paper_trades');
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Penny Trader - Stage 3',
+      title: 'Penny Trader - Stage 4',
       debugShowCheckedModeBanner: false,
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
       theme: ThemeData(
@@ -78,13 +107,17 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
         colorSchemeSeed: Colors.blue,
         useMaterial3: true,
       ),
-      home: Stage3Screen(
+      home: Stage4Screen(
         isDarkMode: _isDarkMode,
         language: _language,
         geminiApiKey: _geminiApiKey,
+        paperBalance: _paperBalance,
+        paperTrades: _paperTrades,
         onThemeChanged: _updateTheme,
         onLanguageChanged: _updateLanguage,
         onApiKeyChanged: _updateApiKey,
+        onAddTrade: _addPaperTrade,
+        onResetAccount: _resetPaperAccount,
       ),
     );
   }
@@ -94,7 +127,7 @@ class AppStrings {
   static String get(String lang, String key) {
     const Map<String, Map<String, String>> dict = {
       'EN': {
-        'app_title': 'Penny Trader - Stage 3 (AI Signal)',
+        'app_title': 'Penny Trader - Stage 4 (Results Log)',
         'market_open': 'NSE Market OPEN (9:15-3:30 IST) • 10s Live Update',
         'market_closed': 'Market CLOSED • Showing Last Session Data',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
@@ -111,16 +144,25 @@ class AppStrings {
         'lang_sub': 'Choose English or Telugu (తెలుగు)',
         'key_title': 'Gemini API Key (Google AI Studio)',
         'key_sub': 'Type or paste your free key here securely',
-        'key_hint': 'AI Studio API Key (Never saved in GitHub)',
+        'key_hint': 'AI Studio API Key',
         'close': 'Close',
         'verify_title': 'Same-Minute Google Finance Test:',
         'candles_count': '5-Min Intraday Bars Shown:',
         'get_ai_signal': 'Generate AI Intraday Signal',
         'analyzing': 'AI Analyst is evaluating technicals & risk...',
-        'enter_key_prompt': 'Please enter your Gemini API Key in Settings (Gear Icon) to generate AI signals.',
+        'enter_key_prompt': 'Please enter your Gemini API Key in Settings.',
+        'log_paper_trade': 'Log as Virtual Paper Trade',
+        'results_tab': 'Results Log & Stats',
+        'virtual_balance': 'Virtual Capital (Base Rs 10,000):',
+        'win_rate': 'Win Rate:',
+        'total_profit': 'Total Paper Profit/Loss:',
+        'avg_win_loss': 'Avg Win / Loss:',
+        'open_trades': 'Open Risk (Max Rs 300 across trades):',
+        'reset_account': 'Reset Paper Account',
+        'no_trades': 'No paper trades logged yet. Generate signals and log trades!',
       },
       'TE': {
-        'app_title': 'పెన్నీ ట్రేడర్ - దశ 3 (AI సిగ్నల్)',
+        'app_title': 'పెన్నీ ట్రేడర్ - దశ 4 (ఫలితాల లాగ్)',
         'market_open': 'NSE మార్కెట్ తెరిచి ఉంది (9:15-3:30 IST) • 10s లైవ్',
         'market_closed': 'మార్కెట్ మూసివేయబడింది • చివరి సెషన్ డేటా',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA (ఆలస్యమైన డేటా)',
@@ -143,10 +185,19 @@ class AppStrings {
         'candles_count': '5-నిమిషాల కాండిల్స్:',
         'get_ai_signal': 'AI సిగ్నల్ సృష్టించండి',
         'analyzing': 'AI విశ్లేషిస్తోంది...',
-        'enter_key_prompt': 'దయచేసి సెట్టింగ్స్‌లో మీ Gemini API కీని నమోదు చేయండి.',
+        'enter_key_prompt': 'దయచేసి సెట్టింగ్స్‌లో మీ API కీని నమోదు చేయండి.',
+        'log_paper_trade': 'పేపర్ ట్రేడ్‌గా లాగ్ చేయండి',
+        'results_tab': 'ఫలితాలు & గణాంకాలు',
+        'virtual_balance': 'వర్చువల్ బ్యాలెన్స్ (రూ. 10,000):',
+        'win_rate': 'గెలుపు రేటు (Win Rate):',
+        'total_profit': 'మొత్తం లాభం/నష్టం:',
+        'avg_win_loss': 'సగటు లాభం/నష్టం:',
+        'open_trades': 'ఓపెన్ రిస్క్ (గరిష్టంగా ರೂ. 300):',
+        'reset_account': 'అకౌంట్ రీసెట్ చేయి',
+        'no_trades': 'పేపర్ ట్రేడ్స్ ఇంకా నమోదు కాలేదు.',
       },
     };
-    return dict[lang]?[key] ?? dict['EN']![key]!;
+    return dict[lang]?[key] ?? dict['EN']![key]![key]!;
   }
 }
 
@@ -169,8 +220,8 @@ class OhlcvBar {
 }
 
 class AiSignalCard {
-  final String action; // BUY, SELL, WAIT, AVOID
-  final String confidence; // Low, Medium, High
+  final String action;
+  final String confidence;
   final String reasonLine;
   final String entryPrice;
   final String shares;
@@ -331,29 +382,37 @@ class StockItem {
   });
 }
 
-class Stage3Screen extends StatefulWidget {
+class Stage4Screen extends StatefulWidget {
   final bool isDarkMode;
   final String language;
   final String geminiApiKey;
+  final double paperBalance;
+  final List> paperTrades;
   final ValueChanged<bool> onThemeChanged;
   final ValueChanged<String> onLanguageChanged;
   final ValueChanged<String> onApiKeyChanged;
+  final ValueChanged> onAddTrade;
+  final VoidCallback onResetAccount;
 
-  const Stage3Screen({
+  const Stage4Screen({
     super.key,
     required this.isDarkMode,
     required this.language,
     required this.geminiApiKey,
+    required this.paperBalance,
+    required this.paperTrades,
     required this.onThemeChanged,
     required this.onLanguageChanged,
     required this.onApiKeyChanged,
+    required this.onAddTrade,
+    required this.onResetAccount,
   });
 
   @override
-  State<Stage3Screen> createState() => _Stage3ScreenState();
+  State<Stage4Screen> createState() => _Stage4ScreenState();
 }
 
-class _Stage3ScreenState extends State<Stage3Screen> {
+class _Stage4ScreenState extends State<Stage4Screen> {
   final MarketDataProvider _dataProvider = YahooDataProvider();
 
   final List<StockItem> _stocks = [
@@ -365,6 +424,7 @@ class _Stage3ScreenState extends State<Stage3Screen> {
   ];
 
   int _selectedIndex = 0;
+  int _bottomNavIndex = 0; // 0 = Trade & AI, 1 = Results Log & Stats
   bool _isMarketOpen = false;
   bool _showCandlestick = true;
   Timer? _activeStockTimer;
@@ -461,7 +521,6 @@ class _Stage3ScreenState extends State<Stage3Screen> {
     });
 
     try {
-      // Build summary of recent bars for Gemini
       final barsSummary = quote.bars
           .map((b) =>
               "O:${b.open} H:${b.high} L:${b.low} C:${b.close} Vol:${b.volume}")
@@ -518,8 +577,6 @@ RULES:
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final rawText = data['candidates'][0]['content']['parts'][0]['text'];
-        
-        // Clean markdown code blocks if Gemini returns ```json ... ```
         final cleanedJson = rawText
             .replaceAll('```json', '')
             .replaceAll('```', '')
@@ -559,6 +616,38 @@ RULES:
         quote.isAiLoading = false;
       });
     }
+  }
+
+  void _logSignalAsTrade(StockItem stock) {
+    final quote = stock.quote;
+    if (quote == null || quote.signalCard == null) return;
+    final card = quote.signalCard!;
+
+    // Check open trade risk limit (Max Rs 300 across open trades)
+    int openCount = widget.paperTrades.where((t) => t['status'] == 'OPEN').length;
+    if (openCount >= 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Max risk limit reached: At most 3 open trades allowed (Rs 300 total risk).')),
+      );
+      return;
+    }
+
+    final newTrade = {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'symbol': stock.symbol,
+      'action': card.action,
+      'entry': quote.price,
+      'target': card.target,
+      'stopLoss': card.stopLoss,
+      'time': DateFormat('dd MMM, hh:mm a').format(DateTime.now()),
+      'status': 'OPEN',
+      'pnl': 0.0,
+    };
+
+    widget.onAddTrade(newTrade);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Signal logged as virtual paper trade!')),
+    );
   }
 
   void _openSettingsSheet() {
@@ -679,341 +768,506 @@ RULES:
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            color: _isMarketOpen
-                ? Colors.green.withOpacity(0.2)
-                : Colors.orange.withOpacity(0.2),
-            child: Text(
-              _isMarketOpen
-                  ? AppStrings.get(lang, 'market_open')
-                  : AppStrings.get(lang, 'market_closed'),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: _isMarketOpen ? Colors.green : Colors.orange,
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 52,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              itemCount: _stocks.length,
-              itemBuilder: (context, index) {
-                final isSelected = index == _selectedIndex;
-                return Padding(
+      body: _bottomNavIndex == 0
+          ? Column(
+              children: [
+                Container(
+                  width: double.infinity,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                  child: ChoiceChip(
-                    label: Text(_stocks[index].symbol.replaceAll('.NS', '')),
-                    selected: isSelected,
-                    onSelected: (_) {
-                      setState(() {
-                        _selectedIndex = index;
-                      });
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  color: _isMarketOpen
+                      ? Colors.green.withOpacity(0.2)
+                      : Colors.orange.withOpacity(0.2),
+                  child: Text(
+                    _isMarketOpen
+                        ? AppStrings.get(lang, 'market_open')
+                        : AppStrings.get(lang, 'market_closed'),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: _isMarketOpen ? Colors.green : Colors.orange,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 52,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    itemCount: _stocks.length,
+                    itemBuilder: (context, index) {
+                      final isSelected = index == _selectedIndex;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 6),
+                        child: ChoiceChip(
+                          label:
+                              Text(_stocks[index].symbol.replaceAll('.NS', '')),
+                          selected: isSelected,
+                          onSelected: (_) {
+                            setState(() {
+                              _selectedIndex = index;
+                            });
+                          },
+                        ),
+                      );
                     },
                   ),
-                );
-              },
-            ),
-          ),
-          const Divider(height: 1),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(14.0),
-              child: Column(
-                children: [
-                  // Stock Price & Chart Card
-                  Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (quote != null && quote.isDelayedOver5Min)
-                            Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 10),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade700,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${AppStrings.get(lang, 'delayed_badge')} (${quote.delayMinutes}m)',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(14.0),
+                    child: Column(
+                      children: [
+                        Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (quote != null && quote.isDelayedOver5Min)
+                                  Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red.shade700,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      '${AppStrings.get(lang, 'delayed_badge')} (${quote.delayMinutes}m)',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          selectedStock.symbol,
+                                          style: const TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          selectedStock.name,
+                                          style: const TextStyle(
+                                              fontSize: 13, color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                    if (quote != null)
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            AppStrings.get(lang, 'ltp'),
+                                            style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey),
+                                          ),
+                                          Text(
+                                            'Rs ${quote.price.toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                                fontSize: 28,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                  ],
                                 ),
-                              ),
-                            ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    selectedStock.symbol,
-                                    style: const TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    selectedStock.name,
-                                    style: const TextStyle(
-                                        fontSize: 13, color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                              if (quote != null)
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      AppStrings.get(lang, 'ltp'),
+                                      quote != null
+                                          ? '${AppStrings.get(lang, 'candles_count')} ${quote.bars.length}'
+                                          : '',
                                       style: const TextStyle(
-                                          fontSize: 11, color: Colors.grey),
+                                          fontSize: 12, color: Colors.grey),
                                     ),
-                                    Text(
-                                      'Rs ${quote.price.toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.bold),
+                                    SegmentedButton<bool>(
+                                      segments: [
+                                        ButtonSegment(
+                                          value: false,
+                                          label: Text(
+                                              AppStrings.get(
+                                                  lang, 'chart_line'),
+                                              style: const TextStyle(
+                                                  fontSize: 12)),
+                                        ),
+                                        ButtonSegment(
+                                          value: true,
+                                          label: Text(
+                                              AppStrings.get(
+                                                  lang, 'chart_candle'),
+                                              style: const TextStyle(
+                                                  fontSize: 12)),
+                                        ),
+                                      ],
+                                      selected: {_showCandlestick},
+                                      onSelectionChanged: (val) {
+                                        setState(() {
+                                          _showCandlestick = val.first;
+                                        });
+                                      },
                                     ),
                                   ],
                                 ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                quote != null
-                                    ? '${AppStrings.get(lang, 'candles_count')} ${quote.bars.length}'
-                                    : '',
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.grey),
-                              ),
-                              SegmentedButton<bool>(
-                                segments: [
-                                  ButtonSegment(
-                                    value: false,
-                                    label: Text(
-                                        AppStrings.get(lang, 'chart_line'),
-                                        style: const TextStyle(fontSize: 12)),
-                                  ),
-                                  ButtonSegment(
-                                    value: true,
-                                    label: Text(
-                                        AppStrings.get(lang, 'chart_candle'),
-                                        style: const TextStyle(fontSize: 12)),
-                                  ),
-                                ],
-                                selected: {_showCandlestick},
-                                onSelectionChanged: (val) {
-                                  setState(() {
-                                    _showCandlestick = val.first;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          if (selectedStock.isLoading)
-                            const SizedBox(
-                              height: 180,
-                              child:
-                                  Center(child: CircularProgressIndicator()),
-                            )
-                          else if (selectedStock.errorMessage.isNotEmpty)
-                            SizedBox(
-                              height: 180,
-                              child: Center(
-                                child: Text(
-                                  selectedStock.errorMessage,
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            )
-                          else if (quote != null && quote.bars.isNotEmpty)
-                            Container(
-                              height: 180,
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Colors.grey.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: CustomPaint(
-                                painter: StockChartPainter(
-                                  bars: quote.bars,
-                                  isCandlestick: _showCandlestick,
-                                  isDark: widget.isDarkMode,
-                                ),
-                              ),
-                            )
-                          else
-                            SizedBox(
-                              height: 180,
-                              child: Center(
-                                child: Text(AppStrings.get(lang, 'no_candles')),
-                              ),
-                            ),
-                          const SizedBox(height: 14),
-                          if (quote != null) ...[
-                            Text(
-                              '${AppStrings.get(lang, 'trade_time')}: ${timeFormatter.format(quote.tradeTimeIst)}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // AI Signal Trigger & Action Card
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      onPressed: quote != null && quote.isAiLoading
-                          ? null
-                          : () => _generateAiSignal(selectedStock),
-                      icon: const Icon(Icons.psychology),
-                      label: Text(
-                        AppStrings.get(lang, 'get_ai_signal'),
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  if (quote != null && quote.isAiLoading)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                            const CircularProgressIndicator(),
-                            const SizedBox(height: 16),
-                            Text(AppStrings.get(lang, 'analyzing')),
-                          ],
-                        ),
-                      ),
-                    )
-                  else if (quote != null && quote.aiError.isNotEmpty)
-                    Card(
-                      color: Colors.red.withOpacity(0.1),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          quote.aiError,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    )
-                  else if (quote != null && quote.signalCard != null)
-                    Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          color: _getActionColor(quote.signalCard!.action),
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: _getActionColor(
-                                        quote.signalCard!.action),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    quote.signalCard!.action,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                const SizedBox(height: 12),
+                                if (selectedStock.isLoading)
+                                  const SizedBox(
+                                    height: 180,
+                                    child: Center(
+                                        child: CircularProgressIndicator()),
+                                  )
+                                else if (selectedStock.errorMessage.isNotEmpty)
+                                  SizedBox(
+                                    height: 180,
+                                    child: Center(
+                                      child: Text(
+                                        selectedStock.errorMessage,
+                                        style: const TextStyle(
+                                            color: Colors.red),
+                                      ),
+                                    ),
+                                  )
+                                else if (quote != null &&
+                                    quote.bars.isNotEmpty)
+                                  Container(
+                                    height: 180,
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.grey.withOpacity(0.3)),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: CustomPaint(
+                                      painter: StockChartPainter(
+                                        bars: quote.bars,
+                                        isCandlestick: _showCandlestick,
+                                        isDark: widget.isDarkMode,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  SizedBox(
+                                    height: 180,
+                                    child: Center(
+                                      child: Text(
+                                          AppStrings.get(lang, 'no_candles')),
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  'Confidence: ${quote.signalCard!.confidence}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
+                                const SizedBox(height: 14),
+                                if (quote != null) ...[
+                                  Text(
+                                    '${AppStrings.get(lang, 'trade_time')}: ${timeFormatter.format(quote.tradeTimeIst)}',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ],
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            Text(
-                              quote.signalCard!.reasonLine,
-                              style: const TextStyle(
-                                  fontSize: 14, fontStyle: FontStyle.italic),
-                            ),
-                            const Divider(height: 20),
-                            if (quote.signalCard!.action == 'BUY' ||
-                                quote.signalCard!.action == 'SELL') ...[
-                              Text('Entry Price: ${quote.signalCard!.entryPrice}'),
-                              Text('Max Loss Shares: ${quote.signalCard!.shares}'),
-                              Text('Stop-Loss: ${quote.signalCard!.stopLoss}'),
-                              Text('Target: ${quote.signalCard!.target}'),
-                              Text(quote.signalCard!.squareOffNote,
-                                  style: const TextStyle(
-                                      color: Colors.orange,
-                                      fontWeight: FontWeight.bold)),
-                              const Divider(height: 20),
-                            ],
-                            Text('Technical: ${quote.signalCard!.techReason}'),
-                            Text('Fundamental: ${quote.signalCard!.fundReason}'),
-                            Text('News: ${quote.signalCard!.newsReason}'),
-                            const SizedBox(height: 8),
-                            Text(
-                                'Invalidation: ${quote.signalCard!.invalidation}',
-                                style: const TextStyle(color: Colors.redAccent)),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Educational analysis, not financial advice. Paper trading only.',
-                              style: TextStyle(
-                                  fontSize: 10, fontStyle: FontStyle.italic),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            onPressed: quote != null && quote.isAiLoading
+                                ? null
+                                : () => _generateAiSignal(selectedStock),
+                            icon: const Icon(Icons.psychology),
+                            label: Text(
+                              AppStrings.get(lang, 'get_ai_signal'),
+                              style: const TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        if (quote != null && quote.isAiLoading)
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                children: [
+                                  const CircularProgressIndicator(),
+                                  const SizedBox(height: 16),
+                                  Text(AppStrings.get(lang, 'analyzing')),
+                                ],
+                              ),
+                            ),
+                          )
+                        else if (quote != null && quote.aiError.isNotEmpty)
+                          Card(
+                            color: Colors.red.withOpacity(0.1),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text(
+                                quote.aiError,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          )
+                        else if (quote != null && quote.signalCard != null)
+                          Card(
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                color:
+                                    _getActionColor(quote.signalCard!.action),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: _getActionColor(
+                                              quote.signalCard!.action),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          quote.signalCard!.action,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Confidence: ${quote.signalCard!.confidence}',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    quote.signalCard!.reasonLine,
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontStyle: FontStyle.italic),
+                                  ),
+                                  const Divider(height: 20),
+                                  if (quote.signalCard!.action == 'BUY' ||
+                                      quote.signalCard!.action == 'SELL') ...[
+                                    Text(
+                                        'Entry Price: ${quote.signalCard!.entryPrice}'),
+                                    Text(
+                                        'Max Loss Shares: ${quote.signalCard!.shares}'),
+                                    Text(
+                                        'Stop-Loss: ${quote.signalCard!.stopLoss}'),
+                                    Text('Target: ${quote.signalCard!.target}'),
+                                    Text(quote.signalCard!.squareOffNote,
+                                        style: const TextStyle(
+                                            color: Colors.orange,
+                                            fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 12),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton.icon(
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.green,
+                                        ),
+                                        onPressed: () =>
+                                            _logSignalAsTrade(selectedStock),
+                                        icon: const Icon(Icons.bookmark_add),
+                                        label: Text(AppStrings.get(
+                                            lang, 'log_paper_trade')),
+                                      ),
+                                    ),
+                                    const Divider(height: 20),
+                                  ],
+                                  Text(
+                                      'Technical: ${quote.signalCard!.techReason}'),
+                                  Text(
+                                      'Fundamental: ${quote.signalCard!.fundReason}'),
+                                  Text('News: ${quote.signalCard!.newsReason}'),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
+                ),
+              ]
+          : ResultsLogView(
+              paperBalance: widget.paperBalance,
+              paperTrades: widget.paperTrades,
+              onResetAccount: widget.onResetAccount,
+              language: lang,
+            ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _bottomNavIndex,
+        onDestinationSelected: (idx) {
+          setState(() {
+            _bottomNavIndex = idx;
+          });
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.show_chart),
+            label: 'Trade & AI',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.receipt_long),
+            label: 'Results Log',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Results & Stats Screen View
+class ResultsLogView extends StatelessWidget {
+  final double paperBalance;
+  final List> paperTrades;
+  final VoidCallback onResetAccount;
+  final String language;
+
+  const ResultsLogView({
+    super.key,
+    required this.paperBalance,
+    required this.paperTrades,
+    required this.onResetAccount,
+    required this.language,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    int totalTrades = paperTrades.length;
+    int winningTrades = paperTrades.where((t) => (t['pnl'] ?? 0.0) > 0).totaLength;
+    double winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0.0;
+    double totalProfit = paperTrades.fold(0.0, (sum, t) => sum + (t['pnl'] ?? 0.0));
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppStrings.get(language, 'results_tab'),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              OutlinedButton.icon(
+                onPressed: onResetAccount,
+                icon: const Icon(Icons.refresh, size: 16),
+                label: Text(AppStrings.get(language, 'reset_account')),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppStrings.get(language, 'virtual_balance')),
+                      Text('Rs ${paperBalance.toStringAsFixed(2)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const Divider(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppStrings.get(language, 'win_rate')),
+                      Text('${winRate.toStringAsFixed(1)}% ($winningTrades/$totalTrades)',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppStrings.get(language, 'total_profit')),
+                      Text('Rs ${totalProfit.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: totalProfit >= 0 ? Colors.green : Colors.red,
+                          )),
+                    ],
+                  ),
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          const Text('Logged Paper Trades:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const SizedBox(height: 8),
+          Expanded(
+            child: paperTrades.isEmpty
+                ? Center(
+                    child: Text(
+                      AppStrings.get(language, 'no_trades'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: paperTrades.length,
+                    itemBuilder: (context, index) {
+                      final t = paperTrades[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          title: Text('${t['symbol']} - ${t['action']}'),
+                          subtitle: Text('Entry: Rs ${t['entry']} | Time: ${t['time']}'),
+                          trailing: Text(
+                            t['status'],
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: t['status'] == 'OPEN' ? Colors.orange : Colors.green,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -1138,7 +1392,7 @@ class StockChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant StockChartPainter oldDelegate) {
     return oldDelegate.bars != bars ||
-        oldDelegate.isCandlestick != isCandlestick ||
-        oldDelegate.isDark != isDark;
+        oldDelegate.isCandlestick == isCandlestick ||
+        oldDelegate.isDark == isDark;
   }
 }
