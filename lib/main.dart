@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -18,8 +19,8 @@ class PennyTraderApp extends StatefulWidget {
 }
 
 class _PennyTraderAppState extends State<PennyTraderApp> {
-  bool _isDarkMode = true; // Fast, high-contrast dark theme by default
-  String _language = 'EN'; // 'EN' = English, 'TE' = Telugu
+  bool _isDarkMode = true;
+  String _language = 'EN';
 
   @override
   void initState() {
@@ -77,7 +78,6 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
   }
 }
 
-// Bilingual Dictionary (English & Telugu)
 class AppStrings {
   static String get(String lang, String key) {
     const Map<String, Map<String, String>> dict = {
@@ -126,7 +126,6 @@ class AppStrings {
   }
 }
 
-// Single OHLCV Bar for Line & Candlestick Chart
 class OhlcvBar {
   final DateTime timeIst;
   final double open;
@@ -163,7 +162,6 @@ class StockQuote {
   });
 }
 
-// Swappable Data Layer Interface
 abstract class MarketDataProvider {
   String get providerName;
   Future<StockQuote> fetchQuoteAndChart(String symbol);
@@ -205,7 +203,6 @@ class YahooDataProvider implements MarketDataProvider {
         DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
     final diffMinutes = nowIst.difference(tradeTimeIst).inMinutes;
 
-    // Parse OHLCV bars for Line & Candlestick Chart
     final List<OhlcvBar> parsedBars = [];
     final List<dynamic>? timestamps = result['timestamp'];
     final indicators = result['indicators']?['quote']?[0];
@@ -241,7 +238,6 @@ class YahooDataProvider implements MarketDataProvider {
       }
     }
 
-    // Keep the most recent 40 bars so candlesticks are clear and readable on a phone screen
     final recentBars = parsedBars.length > 40
         ? parsedBars.sublist(parsedBars.length - 40)
         : parsedBars;
@@ -304,7 +300,7 @@ class _Stage2ScreenState extends State<Stage2Screen> {
 
   int _selectedIndex = 0;
   bool _isMarketOpen = false;
-  bool _showCandlestick = true; // Switchable: true = Candlestick, false = Line
+  bool _showCandlestick = true;
   Timer? _activeStockTimer;
 
   @override
@@ -467,7 +463,6 @@ class _Stage2ScreenState extends State<Stage2Screen> {
       ),
       body: Column(
         children: [
-          // 1. Market Status Banner
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -486,8 +481,6 @@ class _Stage2ScreenState extends State<Stage2Screen> {
               ),
             ),
           ),
-
-          // 2. 5 Starter Stocks Tabs
           SizedBox(
             height: 52,
             child: ListView.builder(
@@ -512,10 +505,7 @@ class _Stage2ScreenState extends State<Stage2Screen> {
               },
             ),
           ),
-
           const Divider(height: 1),
-
-          // 3. Main Price & Switchable Chart Area
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(14.0),
@@ -546,7 +536,6 @@ class _Stage2ScreenState extends State<Stage2Screen> {
                             ),
                           ),
                         ),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -584,10 +573,7 @@ class _Stage2ScreenState extends State<Stage2Screen> {
                             ),
                         ],
                       ),
-
                       const SizedBox(height: 16),
-
-                      // Chart Mode Switch (Line vs Candlestick)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -621,10 +607,7 @@ class _Stage2ScreenState extends State<Stage2Screen> {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 12),
-
-                      // Chart Box
                       if (selectedStock.isLoading)
                         const SizedBox(
                           height: 220,
@@ -665,9 +648,7 @@ class _Stage2ScreenState extends State<Stage2Screen> {
                             child: Text(AppStrings.get(lang, 'no_candles')),
                           ),
                         ),
-
                       const SizedBox(height: 14),
-
                       if (quote != null) ...[
                         Text(
                           '${AppStrings.get(lang, 'trade_time')}: ${timeFormatter.format(quote.tradeTimeIst)}',
@@ -679,7 +660,6 @@ class _Stage2ScreenState extends State<Stage2Screen> {
                           style: const TextStyle(fontSize: 12),
                         ),
                       ],
-
                       const SizedBox(height: 12),
                       const Divider(),
                       Text(
@@ -699,7 +679,6 @@ class _Stage2ScreenState extends State<Stage2Screen> {
   }
 }
 
-// Fast, zero-animation CustomPainter for Line & Candlestick Charts
 class StockChartPainter extends CustomPainter {
   final List<OhlcvBar> bars;
   final bool isCandlestick;
@@ -735,7 +714,6 @@ class StockChartPainter extends CustomPainter {
       return chartHeight - (ratio * (chartHeight - 16)) - 8;
     }
 
-    // Draw 3 horizontal guide lines + right-side Rupee labels
     final gridPaint = Paint()
       ..color = Colors.grey.withOpacity(0.25)
       ..strokeWidth = 1;
@@ -762,7 +740,6 @@ class StockChartPainter extends CustomPainter {
     final double slotWidth = chartWidth / math.max(count, 1);
 
     if (!isCandlestick) {
-      // Draw Line Graph
       final linePaint = Paint()
         ..color = Colors.blueAccent
         ..strokeWidth = 2.0
@@ -780,7 +757,6 @@ class StockChartPainter extends CustomPainter {
       }
       canvas.drawPath(path, linePaint);
     } else {
-      // Draw Candlestick Chart
       final double candleWidth = math.max(2.0, slotWidth * 0.65);
 
       for (int i = 0; i < count; i++) {
@@ -794,13 +770,11 @@ class StockChartPainter extends CustomPainter {
         final double openY = priceToY(b.open);
         final double closeY = priceToY(b.close);
 
-        // Draw high-low wick
         final wickPaint = Paint()
           ..color = color
           ..strokeWidth = 1.2;
         canvas.drawLine(Offset(centerX, highY), Offset(centerX, lowY), wickPaint);
 
-        // Draw open-close body
         final double topY = math.min(openY, closeY);
         final double bottomY = math.max(openY, closeY);
         final double bodyHeight = math.max(2.0, bottomY - topY);
