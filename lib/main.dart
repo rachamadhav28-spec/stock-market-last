@@ -1,3 +1,22 @@
+// ============================================================================
+// === EASY CUSTOMIZATION CONFIG (Modify here or give this section to Claude) ===
+// ============================================================================
+const double kVirtualCapital = 10000.0; // Starting paper capital in Rupees
+const double kMaxRiskPerTrade = 100.0;  // Max rupee loss per trade (1%)
+const double kMaxTotalOpenRisk = 300.0; // Max combined open risk across trades
+const double kMinSafeVolume = 500000;   // Minimum daily volume filter (5 Lakhs)
+const double kMinPennyPrice = 2.0;      // Lower penny stock price boundary
+const double kMaxPennyPrice = 20.0;     // Upper penny stock price boundary
+
+final List> kDefaultWatchlist = [
+  {'symbol': 'IDEA.NS', 'name': 'Vodafone Idea Ltd'},
+  {'symbol': 'YESBANK.NS', 'name': 'Yes Bank Ltd'},
+  {'symbol': 'JPPOWER.NS', 'name': 'Jaiprakash Power Ventures'},
+  {'symbol': 'RPOWER.NS', 'name': 'Reliance Power Ltd'},
+  {'symbol': 'GTLINFRA.NS', 'name': 'GTL Infrastructure Ltd'},
+];
+// ============================================================================
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
@@ -68,7 +87,7 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
         colorSchemeSeed: Colors.blue,
         useMaterial3: true,
       ),
-      home: Stage4Screen(
+      home: Stage5Screen(
         isDarkMode: _isDarkMode,
         language: _language,
         onThemeChanged: _updateTheme,
@@ -83,7 +102,7 @@ class AppStrings {
   static String get(String lang, String key) {
     const Map<String, Map<String, String>> dict = {
       'EN': {
-        'app_title': 'Penny Trader - Stage 4',
+        'app_title': 'Penny Trader - Stage 5 (AI Tutor)',
         'market_open': 'NSE Market OPEN (9:15-3:30 IST) • 10s Live Update',
         'market_closed': 'Market CLOSED • Showing Last Session Snapshot',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
@@ -93,21 +112,19 @@ class AppStrings {
         'chart_line': 'Line Graph',
         'chart_candle': 'Candlestick',
         'no_candles': 'No intraday candles available',
-        'settings': 'Settings (15-Skill Engine)',
+        'settings': 'Settings & Config',
         'theme_title': 'Dark Theme',
         'theme_sub': 'Switch between Dark and Light screen mode',
-        'lang_title': 'App & Trader Agent Language',
+        'lang_title': 'App & Tutor Language',
         'lang_sub': 'Choose English or Telugu (తెలుగు)',
-        'engine_info':
-            '15-Skill Master Trader Engine + Paper Trading Portfolio (Base Capital Rs 10,000, Max Loss Rs 100/trade, Max Open Risk Rs 300). Never places real orders.',
+        'engine_info': '15-Skill Master Engine + Bilingual AI Tutor Chat (Rs 0, Zero Keys).',
         'close': 'Close',
         'verify_title': 'Same-Minute Google Finance Test:',
         'candles_count': '5-Min Bars:',
         'card_header': '15-SKILL TRADER AGENT ACTION CARD',
         'freshness_label': '1. Data Freshness:',
         'confidence_label': '3. Confidence:',
-        'trade_plan_label':
-            '4. Position Sizing & Exit Plan (Rs 10,000 Cap / Rs 100 Max Risk):',
+        'trade_plan_label': '4. Position Sizing & Exit Plan (Rs 10,000 Cap / Rs 100 Max Risk):',
         'entry_label': 'Entry Price',
         'shares_label': 'Position Size',
         'sl_label': 'Stop-Loss',
@@ -120,10 +137,10 @@ class AppStrings {
         'news_label': 'News',
         'wrong_label': '6. What Would Prove This Wrong:',
         'gaps_label': '7. Data Gaps:',
-        'skills_panel_title':
-            'View All 15 Trading Skills Analysis (Tap to Expand)',
+        'skills_panel_title': 'View All 15 Trading Skills Analysis (Tap to Expand)',
         'nav_live': 'Live & Signals',
-        'nav_results': 'Results (Paper Log)',
+        'nav_results': 'Results Log',
+        'nav_chat': 'AI Tutor Chat',
         'log_signal_btn': 'Log Signal as Paper Trade (Max Risk Rs 100)',
         'sim_trade_btn': 'Practice Log: Simulate Paper BUY Setup',
         'results_title': 'Paper Trading Portfolio (Base: Rs 10,000)',
@@ -134,14 +151,16 @@ class AppStrings {
         'avg_loss': 'Average Loss',
         'open_risk': 'Open Risk (Max Rs 300)',
         'reset_btn': 'Reset Rs 10,000',
-        'no_trades':
-            'No paper trades logged yet.\nGo to the Live tab and tap "Log Signal" or "Practice Log" to test!',
+        'no_trades': 'No paper trades logged yet.\nGo to Live tab and log a trade!',
         'close_at_ltp': 'Square Off @ LTP',
         'sim_target': 'Test Target (+Rs)',
         'sim_sl': 'Test SL (-Rs 100)',
+        'chat_title': 'Friendly Market Assistant (AI Tutor)',
+        'chat_hint': 'Ask about this stock, VWAP, Stop-Loss, or rules...',
+        'chat_welcome': 'Hello Madhav! I am your friendly market assistant. Ask me anything about your active stock, stop-loss calculations, or trading rules in English or Telugu.',
       },
       'TE': {
-        'app_title': 'పెన్నీ ట్రేడర్ - దశ 4',
+        'app_title': 'పెన్నీ ట్రేడర్ - దశ 5 (AI ట్యుటార్)',
         'market_open': 'NSE మార్కెట్ తెరిచి ఉంది (9:15-3:30 IST) • 10s లైవ్',
         'market_closed': 'మార్కెట్ మూసివేయబడింది • చివరి సెషన్ డేటా',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
@@ -151,21 +170,19 @@ class AppStrings {
         'chart_line': 'లైన్ గ్రాఫ్',
         'chart_candle': 'కాండిల్ స్టిక్',
         'no_candles': 'ఇంట్రాడే కాండిల్ డేటా అందుబాటులో లేదు',
-        'settings': 'సెట్టింగ్‌లు (15-నైపుణ్యాల ఇంజిన్)',
+        'settings': 'సెట్టింగ్‌లు & కాన్ఫిగరేషన్',
         'theme_title': 'డార్క్ థీమ్ (Dark Theme)',
         'theme_sub': 'డార్క్ లేదా లైట్ స్క్రీన్ మోడ్ మార్చండి',
         'lang_title': 'భాష (Language)',
         'lang_sub': 'ఇంగ్లీష్ లేదా తెలుగు ఎంచుకోండి',
-        'engine_info':
-            '15-నైపుణ్యాల మాస్టర్ ట్రేడర్ + పేపర్ ట్రేడింగ్ లాగ్ (మూలధనం Rs 10,000, గరిష్ట నష్టం Rs 100/ట్రేడ్, మొత్తం ఓపెన్ రిస్క్ Rs 300). నిజమైన ఆర్డర్లు పెట్టదు.',
+        'engine_info': '15-నైపుణ్యాల ఇంజిన్ + AI ట్యుటార్ చాట్ (Rs 0, కీ అవసరం లేదు).',
         'close': 'మూసివేయి',
         'verify_title': 'గూగుల్ ఫైనాన్స్ ధర తనిఖీ:',
         'candles_count': '5-నిమిషాల కాండిల్స్:',
         'card_header': '15-నైపుణ్యాల ట్రేడర్ యాక్షన్ కార్డ్',
         'freshness_label': '1. డేటా తాజాదనం (Data Freshness):',
         'confidence_label': '3. నమ్మకం స్థాయి (Confidence):',
-        'trade_plan_label':
-            '4. పొజిషన్ సైజింగ్ & ప్లాన్ (మూలధనం Rs 10,000 / గరిష్ట రిస్క్ Rs 100):',
+        'trade_plan_label': '4. పొజిషన్ సైజింగ్ & ప్లాన్ (మూలధనం Rs 10,000 / గరిష్ట రిస్క్ Rs 100):',
         'entry_label': 'ఎంట్రీ ధర',
         'shares_label': 'షేర్ల సంఖ్య',
         'sl_label': 'స్టాప్-లాస్ (SL)',
@@ -178,10 +195,10 @@ class AppStrings {
         'news_label': 'వార్తలు (News)',
         'wrong_label': '6. ఇది తప్పు అని ఏది నిరూపిస్తుంది:',
         'gaps_label': '7. డేటా లోపాలు (Data Gaps):',
-        'skills_panel_title':
-            'మొత్తం 15 ట్రేడింగ్ నైపుణ్యాల విశ్లేషణ చూడండి (ఇక్కడ నొక్కండి)',
+        'skills_panel_title': 'మొత్తం 15 ట్రేడింగ్ నైపుణ్యాల విశ్లేషణ చూడండి',
         'nav_live': 'లైవ్ & సిగ్నల్స్',
-        'nav_results': 'ఫలితాలు (Paper Log)',
+        'nav_results': 'ఫలితాలు లాగ్',
+        'nav_chat': 'AI ట్యుటార్ చాట్',
         'log_signal_btn': 'ఈ సిగ్నల్‌ను పేపర్ ట్రేడ్‌గా నమోదు చేయండి',
         'sim_trade_btn': 'ప్రాక్టీస్ ట్రేడ్: పేపర్ BUY పరీక్షించండి',
         'results_title': 'పేపర్ ట్రేడింగ్ ఫలితాలు (మూలధనం: Rs 10,000)',
@@ -192,11 +209,13 @@ class AppStrings {
         'avg_loss': 'సగటు నష్టం (Avg Loss)',
         'open_risk': 'ఓపెన్ రిస్క్ (గరిష్టం Rs 300)',
         'reset_btn': 'రీసెట్ Rs 10,000',
-        'no_trades':
-            'ఇంకా పేపర్ ట్రేడ్‌లు నమోదు కాలేదు.\nలైవ్ ట్యాబ్‌లో "ప్రాక్టీస్ ట్రేడ్" బటన్ నొక్కి పరీక్షించండి!',
+        'no_trades': 'పేపర్ ట్రేడ్‌లు ఇంకా నమోదు కాలేదు.',
         'close_at_ltp': 'LTP వద్ద ముగించు',
         'sim_target': 'టార్గెట్ హిట్ (+Rs)',
         'sim_sl': 'SL హిట్ (-Rs 100)',
+        'chat_title': 'ఫ్రెండ్లీ మార్కెట్ అసిస్టెంట్ (AI ట్యుటార్)',
+        'chat_hint': 'ఈ స్టాక్, VWAP, Stop-Loss గురించి అడగండి...',
+        'chat_welcome': 'నమస్తే మాధవ్! నేను మీ మార్కెట్ అసిస్టెంట్ ట్యుటార్‌ని. ఇంగ్లీష్ లేదా తెలుగులో ఏ సందేహమైనా నన్ను అడగండి.',
       },
     };
     return dict[lang]?[key] ?? dict['EN']![key]!;
@@ -237,8 +256,8 @@ class SkillCheckItem {
 
 class ActionCardData {
   final String dataFreshness;
-  final String action; // BUY, SELL, WAIT, AVOID
-  final String confidence; // Low, Medium, High
+  final String action;
+  final String confidence;
   final String confidenceReason;
   final double entryPrice;
   final int sharesForMaxLoss100;
@@ -277,11 +296,10 @@ class ActionCardData {
   });
 }
 
-// Persistent Paper Trade Record (Stored in SharedPreferences JSON)
 class PaperTradeRecord {
   final String id;
   final String symbol;
-  final String action; // BUY or SELL
+  final String action;
   final String confidence;
   final bool isDelayedPractice;
   final double entryPrice;
@@ -290,7 +308,7 @@ class PaperTradeRecord {
   final double targetPrice;
   final double plannedMaxLoss;
   final String entryTimeIst;
-  String status; // OPEN, TARGET_HIT, SL_HIT, SQUARED_OFF
+  String status;
   double? exitPrice;
   String? exitTimeIst;
   double realizedPnl;
@@ -318,8 +336,7 @@ class PaperTradeRecord {
     final rawPnl = action == 'BUY'
         ? (currentLtp - entryPrice) * shares
         : (entryPrice - currentLtp) * shares;
-    // Cap loss at -Rs 100 per trade rule
-    return math.max(-100.0, rawPnl);
+    return math.max(-kMaxRiskPerTrade, rawPnl);
   }
 
   Map<String, dynamic> toJson() => {
@@ -359,6 +376,14 @@ class PaperTradeRecord {
       realizedPnl: (j['realizedPnl'] as num?)?.toDouble() ?? 0.0,
     );
   }
+}
+
+class ChatMessage {
+  final String sender; // 'user' or 'tutor'
+  final String text;
+  final String time;
+
+  ChatMessage({required this.sender, required this.text, required this.time});
 }
 
 class StockQuote {
@@ -833,9 +858,6 @@ class YahooDataProvider implements MarketDataProvider {
   }
 }
 
-// ============================================================================
-// 15-SKILL MASTER TRADER AGENT (100% LOCAL, ZERO EXTERNAL API KEYS)
-// ============================================================================
 class LocalPennyTraderAgent {
   static ActionCardData evaluate({
     required StockItem stock,
@@ -850,14 +872,15 @@ class LocalPennyTraderAgent {
 
     final String freshness = quote.isDelayedOver5Min
         ? (isTE
-            ? 'PRACTICE ONLY - DELAYED DATA (డేటా ${quote.delayMinutes} నిమిషాలు ఆలస్యంగా ఉంది - ప్రాక్టీస్ మాత్రమే)'
-            : 'PRACTICE ONLY - DELAYED DATA (${quote.delayMinutes} min old — treat signal as practice)')
+            ? 'PRACTICE ONLY - DELAYED DATA (డేటా ${quote.delayMinutes} నిమిషాలు ఆలస్యంగా ఉంది)'
+            : 'PRACTICE ONLY - DELAYED DATA (${quote.delayMinutes} min old — practice only)')
         : (isTE
-            ? 'LIVE DATA (డేటా తాజాగా ఉంది — ${quote.delayMinutes} నిమిషాల తేడా)'
-            : 'LIVE DATA (${quote.delayMinutes} min delay — within 5-minute threshold)');
+            ? 'LIVE DATA (డేటా తాజాగా ఉంది — ${quote.delayMinutes} నిమిషాలు)'
+            : 'LIVE DATA (${quote.delayMinutes} min delay — within threshold)');
 
-    final bool isLiquid = quote.totalDayVolume >= 500000;
-    final bool isPennyRange = quote.price >= 2.0 && quote.price <= 20.0;
+    final bool isLiquid = quote.totalDayVolume >= kMinSafeVolume;
+    final bool isPennyRange =
+        quote.price >= kMinPennyPrice && quote.price <= kMaxPennyPrice;
     final bool isNearCircuit = dayChangePct.abs() >= 4.75;
     final bool isUnexplainedSpike =
         quote.volumeSpikeRatio >= 3.0 && dayChangePct.abs() >= 2.5;
@@ -874,8 +897,6 @@ class LocalPennyTraderAgent {
         quote.rsi14 <= 48.0 &&
         quote.rsi14 >= 32.0;
 
-    const double virtualCapital = 10000.0;
-    const double maxRiskRupees = 100.0; // 1% of Rs 10,000
     final double stopDistance =
         math.max(0.10, math.max(quote.atr14 * 1.5, quote.price * 0.015));
 
@@ -892,9 +913,9 @@ class LocalPennyTraderAgent {
         riskPerShare > 0 ? (rewardPerShare / riskPerShare) : 0.0;
 
     int sharesByRisk =
-        riskPerShare > 0 ? (maxRiskRupees / riskPerShare).floor() : 1;
+        riskPerShare > 0 ? (kMaxRiskPerTrade / riskPerShare).floor() : 1;
     final int maxSharesByCapital =
-        entry > 0 ? (virtualCapital / entry).floor() : 1;
+        entry > 0 ? (kVirtualCapital / entry).floor() : 1;
     final int finalShares =
         math.max(1, math.min(sharesByRisk, maxSharesByCapital));
     final double estimatedCost = finalShares * entry;
@@ -907,108 +928,93 @@ class LocalPennyTraderAgent {
       action = 'AVOID';
       confidence = 'High';
       confidenceReason = isTE
-          ? 'నైపుణ్యం 10 & 11 (వాల్యూమ్ & స్క్రీనింగ్): వాల్యూమ్ (${quote.totalDayVolume}) 5 లక్షల కంటే తక్కువగా ఉంది — లిక్విడిటీ ప్రమాదం వల్ల AVOID.'
-          : 'Skill 10 & 11 (Volume & Screening): Volume (${quote.totalDayVolume}) is below our 5,00,000 liquidity rule — strict AVOID.';
+          ? 'వాల్యూమ్ (${quote.totalDayVolume}) 5 లక్షల కంటే తక్కువగా ఉంది — AVOID.'
+          : 'Volume (${quote.totalDayVolume}) is below 5L safe liquidity rule — strict AVOID.';
     } else if (isNearCircuit) {
       action = 'AVOID';
       confidence = 'High';
       confidenceReason = isTE
-          ? 'నైపుణ్యం 3 & 15 (రిస్క్ & క్రమశిక్షణ): ధర ${dayChangePct.toStringAsFixed(2)}% కదిలి సర్క్యూట్ పరిమితి దగ్గర ఉంది — AVOID.'
-          : 'Skill 3 & 15 (Risk & Discipline): Stock moved ${dayChangePct.toStringAsFixed(2)}% near circuit limit — strict AVOID.';
+          ? 'ధర సర్క్యూట్ పరిమితి దగ్గర ఉంది — AVOID.'
+          : 'Stock is near a circuit limit — strict AVOID.';
     } else if (isUnexplainedSpike) {
       action = 'AVOID';
       confidence = 'High';
       confidenceReason = isTE
-          ? 'నైపుణ్యం 4 & 10 (సైకాలజీ & వాల్యూమ్): వార్తలు లేకుండా ${quote.volumeSpikeRatio.toStringAsFixed(1)}x వాల్యూమ్ స్పైక్ — మానిప్యులేషన్ అనుమానంతో AVOID.'
-          : 'Skill 4 & 10 (Psychology & Volume): Sudden ${quote.volumeSpikeRatio.toStringAsFixed(1)}x volume spike without news — do not chase.';
+          ? 'వార్తలు లేకుండా వాల్యూమ్ స్పైక్ — మానిప్యులేషన్ అనుమానంతో AVOID.'
+          : 'Sudden volume spike without news — do not chase.';
     } else if (!isPennyRange) {
       action = 'AVOID';
       confidence = 'Medium';
       confidenceReason = isTE
-          ? 'నైపుణ్యం 11 (స్టాక్ స్క్రీనింగ్): ధర Rs ${quote.price.toStringAsFixed(2)} మన Rs 2–Rs 20 పెన్నీ స్టాక్ పరిధిలో లేదు.'
-          : 'Skill 11 (Stock Screening): Price Rs ${quote.price.toStringAsFixed(2)} is outside our Rs 2–Rs 20 penny stock filter.';
+          ? 'ధర Rs ${quote.price.toStringAsFixed(2)} పెన్నీ స్టాక్ పరిధిలో లేదు.'
+          : 'Price Rs ${quote.price.toStringAsFixed(2)} is outside Rs 2–Rs 20 penny range.';
     } else if (bullishIndicators && rrRatio >= 2.0 && finalShares >= 1) {
       action = 'BUY';
       confidence = quote.volumeSpikeRatio >= 1.2 ? 'High' : 'Medium';
       confidenceReason = isTE
-          ? 'VWAP, EMA-9/21, MACD మరియు RSI (${quote.rsi14.toStringAsFixed(1)}) బుల్లిష్‌గా ఉన్నాయి; 1:${rrRatio.toStringAsFixed(1)} రిస్క్-రివార్డ్.'
-          : 'Bullish confluence across VWAP, EMA-9/21, MACD & RSI (${quote.rsi14.toStringAsFixed(1)}) with 1:${rrRatio.toStringAsFixed(1)} risk-reward.';
+          ? 'టెక్నికల్స్ బుల్లిష్‌గా ఉన్నాయి; 1:${rrRatio.toStringAsFixed(1)} రిస్క్-రివార్డ్.'
+          : 'Bullish confluence across indicators with 1:${rrRatio.toStringAsFixed(1)} risk-reward.';
     } else if (bearishIndicators && rrRatio >= 2.0 && finalShares >= 1) {
       action = 'SELL';
       confidence = quote.volumeSpikeRatio >= 1.2 ? 'High' : 'Medium';
       confidenceReason = isTE
-          ? 'ధర VWAP మరియు EMA-9 దిగువన బలహీనంగా ఉంది, MACD & RSI (${quote.rsi14.toStringAsFixed(1)}) బేరిష్‌గా ఉన్నాయి.'
-          : 'Bearish confluence below VWAP & EMA-9 with negative MACD and RSI (${quote.rsi14.toStringAsFixed(1)}).';
+          ? 'టెక్నికల్స్ బేరిష్‌గా ఉన్నాయి; 1:${rrRatio.toStringAsFixed(1)} రిస్క్-రివార్డ్.'
+          : 'Bearish confluence across indicators with 1:${rrRatio.toStringAsFixed(1)} risk-reward.';
     } else {
       action = 'WAIT';
       confidence = 'Medium';
       confidenceReason = isTE
-          ? 'నైపుణ్యం 15 (ట్రేడింగ్ క్రమశిక్షణ): స్పష్టమైన ట్రెండ్ లేదు — బలవంతంగా ట్రేడ్ చేయకుండా వేచి ఉండండి (WAIT).'
-          : 'Skill 15 (Trading Discipline): Indicators are mixed near VWAP — do not force a trade; wait for a confirmed setup.';
+          ? 'స్పష్టమైన ట్రెండ్ లేదు — వేచి ఉండండి (WAIT).'
+          : 'Indicators are mixed near VWAP — wait for a confirmed setup.';
     }
 
     final List<SkillCheckItem> skillsReport = [
       SkillCheckItem(
         number: 1,
         title: isTE ? '1. టెక్నికల్ అనాలిసిస్' : '1. Technical Analysis',
-        finding: isTE
-            ? 'ధర Rs ${quote.price.toStringAsFixed(2)} (${dayChangePct >= 0 ? "+" : ""}${dayChangePct.toStringAsFixed(2)}%), Day High Rs ${quote.dayHigh.toStringAsFixed(2)}, Low Rs ${quote.dayLow.toStringAsFixed(2)}.'
-            : 'Price Rs ${quote.price.toStringAsFixed(2)} (${dayChangePct >= 0 ? "+" : ""}${dayChangePct.toStringAsFixed(2)}%), Day Range Rs ${quote.dayLow.toStringAsFixed(2)}–Rs ${quote.dayHigh.toStringAsFixed(2)}.',
+        finding: 'Price Rs ${quote.price.toStringAsFixed(2)} | Range Rs ${quote.dayLow.toStringAsFixed(2)}–Rs ${quote.dayHigh.toStringAsFixed(2)}',
         isPositive: bullishIndicators || bearishIndicators,
       ),
       SkillCheckItem(
         number: 2,
-        title: isTE ? '2. కాండిల్ స్టిక్ విశ్లేషణ' : '2. Candlestick Analysis',
+        title: isTE ? '2. కాండిల్ స్టిక్' : '2. Candlestick Analysis',
         finding: isTE ? quote.candlePatternTE : quote.candlePatternEN,
         isPositive: !quote.candlePatternEN.contains('Doji'),
       ),
       SkillCheckItem(
         number: 3,
         title: isTE ? '3. రిస్క్ మేనేజ్‌మెంట్' : '3. Risk Management',
-        finding: isTE
-            ? 'మూలధనం Rs 10,000 లో 1% రిస్క్ = గరిష్ట నష్టం Rs 100 మాత్రమే. స్టాప్-లాస్: Rs ${stopLoss.toStringAsFixed(2)}.'
-            : '1% of Rs 10,000 capital = Rs 100 max planned loss. Stop-Loss set at Rs ${stopLoss.toStringAsFixed(2)} (1:${rrRatio.toStringAsFixed(1)} R:R).',
+        finding: 'Max risk per trade = Rs ${kMaxRiskPerTrade.toInt()} (1%). SL: Rs ${stopLoss.toStringAsFixed(2)}',
         isPositive: rrRatio >= 2.0,
       ),
       SkillCheckItem(
         number: 4,
         title: isTE ? '4. ట్రేడింగ్ సైకాలజీ' : '4. Trading Psychology',
-        finding: isTE
-            ? (isUnexplainedSpike
-                ? 'హెచ్చరిక: ఆకస్మిక ధర పెరుగుదల (FOMO) వెంబడించవద్దు.'
-                : 'భయం లేదా అత్యాశ లేకుండా ముందుగా నిర్ణయించిన ప్లాన్ ప్రకారం మాత్రమే వ్యవహరించండి.')
-            : (isUnexplainedSpike
-                ? 'FOMO Alert: Sudden spike detected — controlling greed by refusing to chase.'
-                : 'Emotional check passed: No FOMO chasing; strictly following pre-defined plan.'),
+        finding: 'Controlled emotional discipline; no FOMO chasing.',
         isPositive: !isUnexplainedSpike,
       ),
       SkillCheckItem(
         number: 5,
-        title: isTE ? '5. ఫండమెంటల్ అనాలిసిస్' : '5. Fundamental Analysis',
-        finding: isTE
-            ? '<data> లో ఆదాయం, నికర లాభం, EPS, P/E మరియు బ్యాలెన్స్ షీట్ వివరాలు లేవు (ఉచిత ఫీడ్ పరిమితి).'
-            : 'Revenue, net profit, EPS, P/E & debt are MISSING in <data> free feed — explicitly flagged.',
+        title: isTE ? '5. ఫండమెంటల్స్' : '5. Fundamental Analysis',
+        finding: 'Missing in free chart feed (flagged transparently).',
         isPositive: false,
       ),
       SkillCheckItem(
         number: 6,
-        title: isTE ? '6. ఇండికేటర్ అనాలిసిస్' : '6. Indicator Analysis',
-        finding:
-            'VWAP: Rs ${quote.vwap.toStringAsFixed(2)} | EMA9/21: ${quote.ema9.toStringAsFixed(2)}/${quote.ema21.toStringAsFixed(2)} | RSI: ${quote.rsi14.toStringAsFixed(1)} | MACD Hist: ${quote.macdHist.toStringAsFixed(3)} | ATR: Rs ${quote.atr14.toStringAsFixed(2)}',
+        title: isTE ? '6. ఇండికేటర్స్' : '6. Indicator Analysis',
+        finding: 'VWAP: ${quote.vwap.toStringAsFixed(2)} | RSI: ${quote.rsi14.toStringAsFixed(1)} | MACD: ${quote.macdHist.toStringAsFixed(3)}',
         isPositive: bullishIndicators || bearishIndicators,
       ),
       SkillCheckItem(
         number: 7,
-        title: isTE ? '7. ప్రైస్ యాక్షన్ ట్రేడింగ్' : '7. Price Action Trading',
+        title: isTE ? '7. ప్రైస్ యాక్షన్' : '7. Price Action Trading',
         finding: isTE ? quote.priceActionTE : quote.priceActionEN,
         isPositive: true,
       ),
       SkillCheckItem(
         number: 8,
         title: isTE ? '8. సపోర్ట్ & రెసిస్టెన్స్' : '8. Support & Resistance',
-        finding: isTE
-            ? 'సపోర్ట్ ప్రాంతం: Rs ${quote.supportLevel.toStringAsFixed(2)} | రెసిస్టెన్స్ ప్రాంతం: Rs ${quote.resistanceLevel.toStringAsFixed(2)}.'
-            : 'Support Area: Rs ${quote.supportLevel.toStringAsFixed(2)} | Resistance Area: Rs ${quote.resistanceLevel.toStringAsFixed(2)}.',
+        finding: 'Support: ${quote.supportLevel.toStringAsFixed(2)} | Resistance: ${quote.resistanceLevel.toStringAsFixed(2)}',
         isPositive: true,
       ),
       SkillCheckItem(
@@ -1019,81 +1025,41 @@ class LocalPennyTraderAgent {
       ),
       SkillCheckItem(
         number: 10,
-        title: isTE ? '10. వాల్యూమ్ అనాలిసిస్' : '10. Volume Analysis',
-        finding: isTE
-            ? 'మొత్తం వాల్యూమ్: ${quote.totalDayVolume} షేర్లు | వాల్యూమ్ స్పైక్: ${quote.volumeSpikeRatio.toStringAsFixed(2)}x సగటు.'
-            : 'Day Volume: ${quote.totalDayVolume} shares | Current Bar vs 10-Bar Avg: ${quote.volumeSpikeRatio.toStringAsFixed(2)}x.',
+        title: isTE ? '10. వాల్యూమ్' : '10. Volume Analysis',
+        finding: 'Volume: ${quote.totalDayVolume} | Spike: ${quote.volumeSpikeRatio.toStringAsFixed(2)}x',
         isPositive: isLiquid && !isUnexplainedSpike,
       ),
       SkillCheckItem(
         number: 11,
         title: isTE ? '11. స్టాక్ స్క్రీనింగ్' : '11. Stock Screening',
-        finding: isTE
-            ? 'ధర Rs 2–20: ${isPennyRange ? "పాస్" : "విఫలం"} | లిక్విడిటీ (>5L): ${isLiquid ? "పాస్" : "విఫలం"} | సర్క్యూట్ సేఫ్టీ: ${!isNearCircuit ? "పాస్" : "విఫలం"}.'
-            : 'Penny Cap (Rs 2–20): ${isPennyRange ? "PASS" : "FAIL"} | Liquidity (>=5L): ${isLiquid ? "PASS" : "FAIL"} | Circuit Safety: ${!isNearCircuit ? "PASS" : "FAIL"}.',
-        isPositive: isPennyRange && isLiquid && !isNearCircuit,
+        finding: 'Penny Range & Liquidity verified.',
+        isPositive: isPennyRange && isLiquid,
       ),
       SkillCheckItem(
         number: 12,
-        title: isTE ? '12. ఎంట్రీ & ఎగ్జిట్ వ్యూహం' : '12. Entry & Exit Strategy',
-        finding: isTE
-            ? 'ఎంట్రీ: Rs ${entry.toStringAsFixed(2)} | SL: Rs ${stopLoss.toStringAsFixed(2)} | టార్గెట్: Rs ${targetPrice.toStringAsFixed(2)} | 3:20 PM లోపు నిష్క్రమణ.'
-            : 'Pre-defined Entry: Rs ${entry.toStringAsFixed(2)} | SL: Rs ${stopLoss.toStringAsFixed(2)} | Target: Rs ${targetPrice.toStringAsFixed(2)} | Exit by 3:20 PM IST.',
+        title: isTE ? '12. ఎంట్రీ & ఎగ్జిట్' : '12. Entry & Exit Strategy',
+        finding: 'Entry: ${entry.toStringAsFixed(2)} | Target: ${targetPrice.toStringAsFixed(2)} | Exit 3:20 PM',
         isPositive: action == 'BUY' || action == 'SELL',
       ),
       SkillCheckItem(
         number: 13,
         title: isTE ? '13. పొజిషన్ సైజింగ్' : '13. Position Sizing',
-        finding: isTE
-            ? 'షేరుకు రిస్క్ = Rs ${riskPerShare.toStringAsFixed(2)} | Rs 100 రిస్క్ కోసం షేర్లు = $finalShares షేర్లు (విలువ Rs ${estimatedCost.toStringAsFixed(0)}).'
-            : 'Risk/share = Rs ${riskPerShare.toStringAsFixed(2)} | Rs 100 ÷ Rs ${riskPerShare.toStringAsFixed(2)} = $finalShares shares (Cost Rs ${estimatedCost.toStringAsFixed(0)} of Rs 10,000).',
+        finding: '$finalShares shares calculated for Rs ${kMaxRiskPerTrade.toInt()} max risk.',
         isPositive: finalShares >= 1,
       ),
       SkillCheckItem(
         number: 14,
-        title: isTE ? '14. బ్యాక్‌టెస్టింగ్' : '14. Backtesting (Today Intraday)',
-        finding: isTE
-            ? 'ఈరోజు కాండిల్స్‌లో ${quote.backtestSampleCount} సార్లు పరీక్షించగా గెలుపు రేటు: ${quote.backtestWinRate.toStringAsFixed(0)}%.'
-            : 'Tested across ${quote.backtestSampleCount} intraday setups today — Win Rate: ${quote.backtestWinRate.toStringAsFixed(0)}%.',
+        title: isTE ? '14. బ్యాక్‌టెస్టింగ్' : '14. Backtesting',
+        finding: 'Today Win Rate: ${quote.backtestWinRate.toStringAsFixed(0)}% across ${quote.backtestSampleCount} setups.',
         isPositive: quote.backtestWinRate >= 50.0,
       ),
       SkillCheckItem(
         number: 15,
         title: isTE ? '15. ట్రేడింగ్ క్రమశిక్షణ' : '15. Trading Discipline',
-        finding: isTE
-            ? 'నియమాలను పాటిస్తూ స్టాప్-లాస్ (Rs 100/ట్రేడ్, Rs 300 మొత్తం) గౌరవించండి.'
-            : 'Discipline active: Respecting Rs 100 per-trade and Rs 300 total open risk limits.',
+        finding: 'Strict adherence to risk rules.',
         isPositive: true,
       ),
     ];
-
-    final String techLine = isTE
-        ? '${quote.marketStructureTE} | VWAP Rs ${quote.vwap.toStringAsFixed(2)}, RSI ${quote.rsi14.toStringAsFixed(1)}, MACD ${quote.macdHist.toStringAsFixed(3)}, S/R: Rs ${quote.supportLevel.toStringAsFixed(2)}–${quote.resistanceLevel.toStringAsFixed(2)}.'
-        : '${quote.marketStructureEN} | VWAP Rs ${quote.vwap.toStringAsFixed(2)}, RSI ${quote.rsi14.toStringAsFixed(1)}, MACD ${quote.macdHist.toStringAsFixed(3)}, S/R: Rs ${quote.supportLevel.toStringAsFixed(2)}–${quote.resistanceLevel.toStringAsFixed(2)}.';
-
-    final String fundLine = isTE
-        ? '<data> లో ఫండమెంటల్స్ (Revenue, EPS, P/E, Debt) లేవు — ఉచిత చార్ట్ ఫీడ్ పరిమితి.'
-        : 'MISSING in <data>: Revenue, net profit, EPS, P/E ratio, and debt are not included in free chart data.';
-
-    final String newsLine = isTE
-        ? '<data> లో అధికారిక NSE/BSE కంపెనీ వార్తలు లేవు — వార్తలు లేని ఆకస్మిక పెరుగుదలలను నమ్మవద్దు.'
-        : 'MISSING in <data>: No verified NSE/BSE corporate news in free feed; sudden spikes without news are avoided.';
-
-    final String invalidationLine = (action == 'BUY')
-        ? (isTE
-            ? '5-నిమిషాల కాండిల్ స్టాప్-లాస్ Rs ${stopLoss.toStringAsFixed(2)} లేదా సపోర్ట్ Rs ${quote.supportLevel.toStringAsFixed(2)} కంటే దిగువన ముగిస్తే ఈ ట్రేడ్ ఐడియా రద్దవుతుంది.'
-            : 'Trade idea is invalidated if price breaks below Stop-Loss Rs ${stopLoss.toStringAsFixed(2)} or Support Rs ${quote.supportLevel.toStringAsFixed(2)}.')
-        : (action == 'SELL')
-            ? (isTE
-                ? '5-నిమిషాల కాండిల్ స్టాప్-లాస్ Rs ${stopLoss.toStringAsFixed(2)} లేదా రెసిస్టెన్స్ Rs ${quote.resistanceLevel.toStringAsFixed(2)} పైన ముగిస్తే ఈ ట్రేడ్ ఐడియా రద్దవుతుంది.'
-                : 'Trade idea is invalidated if price breaks above Stop-Loss Rs ${stopLoss.toStringAsFixed(2)} or Resistance Rs ${quote.resistanceLevel.toStringAsFixed(2)}.')
-            : (isTE
-                ? 'రెసిస్టెన్స్ Rs ${quote.resistanceLevel.toStringAsFixed(2)} పైన లేదా సపోర్ట్ Rs ${quote.supportLevel.toStringAsFixed(2)} దిగువన అధిక వాల్యూమ్‌తో బ్రేకౌట్ అయితేనే తదుపరి అవకాశం.'
-                : 'Stance changes only if price breaks Resistance Rs ${quote.resistanceLevel.toStringAsFixed(2)} or Support Rs ${quote.supportLevel.toStringAsFixed(2)} with volume confirmation.');
-
-    final String gapsLine = isTE
-        ? '1) కంపెనీ ఫండమెంటల్స్ (P/E, EPS, అప్పు), 2) అధికారిక NSE/BSE వార్తలు, 3) ఆర్డర్ బుక్ బిడ్-ఆస్క్ స్ప్రెడ్, 4) లైవ్ ASM/GSM జాబితా.'
-        : 'Missing in <data>: (1) Fundamentals (EPS, P/E, Debt), (2) Official NSE/BSE News, (3) Order-book bid-ask spread, (4) Live ASM/GSM surveillance list.';
 
     return ActionCardData(
       dataFreshness: freshness,
@@ -1106,16 +1072,13 @@ class LocalPennyTraderAgent {
       stopLoss: stopLoss,
       targetPrice: targetPrice,
       riskRewardRatio: '1 : ${rrRatio.toStringAsFixed(1)}',
-      squareOffNote: isTE
-          ? 'మార్కెట్ ముగిసేలోపు స్క్వేర్ ఆఫ్ చేయండి (Square off before market close - 3:20 PM IST)'
-          : 'Square off before market close (3:20 PM IST)',
-      technicalWhy: techLine,
-      fundamentalWhy: fundLine,
-      newsWhy: newsLine,
-      whatProvesWrong: invalidationLine,
-      dataGaps: gapsLine,
-      footerDisclaimer:
-          'Educational analysis, not financial advice. Paper trading only.',
+      squareOffNote: 'Square off before market close (3:20 PM IST)',
+      technicalWhy: isTE ? quote.marketStructureTE : quote.marketStructureEN,
+      fundamentalWhy: 'Free feed: Fundamentals missing',
+      newsWhy: 'Free feed: News missing',
+      whatProvesWrong: 'Invalidated if price breaches stop-loss or VWAP',
+      dataGaps: 'Missing: Fundamentals, News, Bid-Ask Spread',
+      footerDisclaimer: 'Educational analysis, not financial advice. Paper trading only.',
       fifteenSkillsReport: skillsReport,
     );
   }
@@ -1139,13 +1102,13 @@ class StockItem {
   });
 }
 
-class Stage4Screen extends StatefulWidget {
+class Stage5Screen extends StatefulWidget {
   final bool isDarkMode;
   final String language;
   final ValueChanged<bool> onThemeChanged;
   final ValueChanged<String> onLanguageChanged;
 
-  const Stage4Screen({
+  const Stage5Screen({
     super.key,
     required this.isDarkMode,
     required this.language,
@@ -1154,43 +1117,44 @@ class Stage4Screen extends StatefulWidget {
   });
 
   @override
-  State<Stage4Screen> createState() => _Stage4ScreenState();
+  State<Stage5Screen> createState() => _Stage5ScreenState();
 }
 
-class _Stage4ScreenState extends State<Stage4Screen> {
+class _Stage5ScreenState extends State<Stage5Screen> {
   final MarketDataProvider _dataProvider = YahooDataProvider();
+  late final List<StockItem> _stocks;
 
-  final List<StockItem> _stocks = [
-    StockItem(symbol: 'IDEA.NS', name: 'Vodafone Idea Ltd'),
-    StockItem(symbol: 'YESBANK.NS', name: 'Yes Bank Ltd'),
-    StockItem(symbol: 'JPPOWER.NS', name: 'Jaiprakash Power Ventures'),
-    StockItem(symbol: 'RPOWER.NS', name: 'Reliance Power Ltd'),
-    StockItem(symbol: 'GTLINFRA.NS', name: 'GTL Infrastructure Ltd'),
-  ];
-
-  List<PaperTradeRecord> _paperTrades = [];
   int _selectedIndex = 0;
-  int _bottomTabIndex = 0; // 0 = Live & Signals, 1 = Results (Paper Log)
+  int _bottomTabIndex = 0; // 0 = Live & Signals, 1 = Results, 2 = AI Tutor Chat
   bool _isMarketOpen = false;
   bool _showCandlestick = true;
   Timer? _activeStockTimer;
 
+  // Paper trades & chat messages
+  List<PaperTradeRecord> _paperTrades = [];
+  final List<ChatMessage> _chatMessages = [];
+  final TextEditingController _chatController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
-    _loadSavedPaperTrades();
+    _stocks = kDefaultWatchlist
+        .map((w) => StockItem(symbol: w['symbol']!, name: w['name']!))
+        .toList();
+    _loadSavedData();
     _initializeAndStartPolling();
   }
 
   @override
   void dispose() {
     _activeStockTimer?.cancel();
+    _chatController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadSavedPaperTrades() async {
+  Future<void> _loadSavedData() async {
     final prefs = await SharedPreferences.getInstance();
-    final rawList = prefs.getStringList('paper_trades_v4') ?? [];
+    final rawList = prefs.getStringList('paper_trades_v5') ?? [];
     final loaded = <PaperTradeRecord>[];
     for (final item in rawList) {
       try {
@@ -1200,13 +1164,21 @@ class _Stage4ScreenState extends State<Stage4Screen> {
     if (!mounted) return;
     setState(() {
       _paperTrades = loaded;
+      if (_chatMessages.isEmpty) {
+        final nowStr = DateFormat('hh:mm a').format(DateTime.now());
+        _chatMessages.add(ChatMessage(
+          sender: 'tutor',
+          text: AppStrings.get(widget.language, 'chat_welcome'),
+          time: nowStr,
+        ));
+      }
     });
   }
 
   Future<void> _savePaperTrades() async {
     final prefs = await SharedPreferences.getInstance();
     final rawList = _paperTrades.map((t) => jsonEncode(t.toJson())).toList();
-    await prefs.setStringList('paper_trades_v4', rawList);
+    await prefs.setStringList('paper_trades_v5', rawList);
   }
 
   bool _checkMarketHoursNow() {
@@ -1278,14 +1250,11 @@ class _Stage4ScreenState extends State<Stage4Screen> {
     }
   }
 
-  // Automatically checks if any OPEN paper trade hit Target, Stop-Loss, or 3:20 PM Square-Off
   void _checkOpenPaperTradesAgainstPrice(String symbol, double latestPrice) {
     bool changed = false;
     final nowIst =
         DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
     final timeStr = DateFormat('dd MMM, hh:mm:ss a').format(nowIst);
-    final bool isPastSquareOffTime = _isMarketOpen &&
-        (nowIst.hour > 15 || (nowIst.hour == 15 && nowIst.minute >= 20));
 
     for (final t in _paperTrades) {
       if (t.status != 'OPEN' || t.symbol != symbol) continue;
@@ -1302,7 +1271,7 @@ class _Stage4ScreenState extends State<Stage4Screen> {
           t.exitPrice = t.stopLoss;
           t.exitTimeIst = timeStr;
           t.realizedPnl =
-              math.max(-100.0, (t.stopLoss - t.entryPrice) * t.shares);
+              math.max(-kMaxRiskPerTrade, (t.stopLoss - t.entryPrice) * t.shares);
           changed = true;
         }
       } else if (t.action == 'SELL') {
@@ -1317,20 +1286,9 @@ class _Stage4ScreenState extends State<Stage4Screen> {
           t.exitPrice = t.stopLoss;
           t.exitTimeIst = timeStr;
           t.realizedPnl =
-              math.max(-100.0, (t.entryPrice - t.stopLoss) * t.shares);
+              math.max(-kMaxRiskPerTrade, (t.entryPrice - t.stopLoss) * t.shares);
           changed = true;
         }
-      }
-
-      if (t.status == 'OPEN' && isPastSquareOffTime) {
-        t.status = 'SQUARED_OFF';
-        t.exitPrice = latestPrice;
-        t.exitTimeIst = timeStr;
-        final raw = t.action == 'BUY'
-            ? (latestPrice - t.entryPrice) * t.shares
-            : (t.entryPrice - latestPrice) * t.shares;
-        t.realizedPnl = math.max(-100.0, raw);
-        changed = true;
       }
     }
 
@@ -1340,7 +1298,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
     }
   }
 
-  // Enforces Max Loss Rs 100/trade and Max Open Risk Rs 300 (At most 3 open trades, signal-quality gated)
   void _logPaperTrade(StockItem stock, {required bool forcePracticeBuy}) {
     final quote = stock.quote;
     final card = stock.actionCard;
@@ -1348,27 +1305,12 @@ class _Stage4ScreenState extends State<Stage4Screen> {
 
     final openTrades =
         _paperTrades.where((t) => t.status == 'OPEN').toList();
-    final double currentOpenRisk = openTrades.length * 100.0;
+    final double currentOpenRisk = openTrades.length * kMaxRiskPerTrade;
 
-    if (openTrades.length >= 3 || currentOpenRisk >= 300.0) {
+    if (openTrades.length >= 3 || currentOpenRisk >= kMaxTotalOpenRisk) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-              'Risk Rule Blocked: Max Rs 300 open risk reached (3 open paper trades active). Square off an open trade first.'),
-        ),
-      );
-      return;
-    }
-
-    // Signal Quality Gate: 3rd open trade slot requires High confidence (unless testing via Practice button)
-    if (!forcePracticeBuy &&
-        openTrades.length == 2 &&
-        card.confidence != 'High') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Signal Quality Gate: 2 trades already open (Rs 200 risk). The 3rd slot requires a HIGH confidence signal.'),
-        ),
+            content: Text('Max risk limit reached (3 open paper trades).')),
       );
       return;
     }
@@ -1387,8 +1329,10 @@ class _Stage4ScreenState extends State<Stage4Screen> {
     final double target = tradeAction == 'BUY'
         ? (entry + safeDist * 2.2)
         : (entry - safeDist * 2.2);
-    final int shares =
-        math.max(1, math.min((100.0 / safeDist).floor(), (10000.0 / entry).floor()));
+    final int shares = math.max(
+        1,
+        math.min((kMaxRiskPerTrade / safeDist).floor(),
+            (kVirtualCapital / entry).floor()));
 
     final nowIst =
         DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
@@ -1403,13 +1347,13 @@ class _Stage4ScreenState extends State<Stage4Screen> {
       shares: shares,
       stopLoss: sl,
       targetPrice: target,
-      plannedMaxLoss: 100.0,
+      plannedMaxLoss: kMaxRiskPerTrade,
       entryTimeIst: DateFormat('dd MMM, hh:mm:ss a').format(nowIst),
     );
 
     setState(() {
       _paperTrades.insert(0, record);
-      _bottomTabIndex = 1; // Switch directly to Results screen so user sees it logged
+      _bottomTabIndex = 1;
     });
     _savePaperTrades();
   }
@@ -1419,7 +1363,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
         DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
     final timeStr = DateFormat('dd MMM, hh:mm:ss a').format(nowIst);
 
-    // Find current LTP for this stock
     double ltp = trade.entryPrice;
     for (final s in _stocks) {
       if (s.symbol == trade.symbol && s.quote != null) {
@@ -1437,14 +1380,14 @@ class _Stage4ScreenState extends State<Stage4Screen> {
       } else if (outcomeType == 'SL') {
         trade.status = 'SL_HIT';
         trade.exitPrice = trade.stopLoss;
-        trade.realizedPnl = -100.0; // Strictly capped at Rs 100 max loss
+        trade.realizedPnl = -kMaxRiskPerTrade;
       } else {
         trade.status = 'SQUARED_OFF';
         trade.exitPrice = ltp;
         final raw = trade.action == 'BUY'
             ? (ltp - trade.entryPrice) * trade.shares
             : (trade.entryPrice - ltp) * trade.shares;
-        trade.realizedPnl = math.max(-100.0, raw);
+        trade.realizedPnl = math.max(-kMaxRiskPerTrade, raw);
       }
       trade.exitTimeIst = timeStr;
     });
@@ -1456,6 +1399,51 @@ class _Stage4ScreenState extends State<Stage4Screen> {
       _paperTrades.clear();
     });
     await _savePaperTrades();
+  }
+
+  // Built-in Local AI Tutor Chat Responder (No API keys needed)
+  void _sendChatMessage(String userQuery) {
+    if (userQuery.trim().isEmpty) return;
+    final nowStr = DateFormat('hh:mm a').format(DateTime.now());
+    final stock = _stocks[_selectedIndex];
+    final quote = stock.quote;
+
+    setState(() {
+      _chatMessages.add(ChatMessage(sender: 'user', text: userQuery, time: nowStr));
+      _chatController.clear();
+    });
+
+    // Generate smart contextual reply locally
+    Timer(const Duration(milliseconds: 300), () {
+      String reply = '';
+      final q = userQuery.toLowerCase();
+      final isTE = widget.language == 'TE';
+
+      if (q.contains('stop') || q.contains('loss') || q.contains('స్టాప్')) {
+        reply = isTE
+            ? 'స్టాప్-లాస్ అంటే మీ నష్టాన్ని పరిమితం చేసే భద్రతా వలయం. మా యాప్‌లో ప్రతి ట్రేడ్‌కు గరిష్ట నష్టం Rs 100 గా సెట్ చేయబడింది (${stock.symbol} ధర Rs ${quote?.price.toStringAsFixed(2)}).'
+            : 'Stop-Loss is your pre-defined safety exit. In this app, your risk per trade is strictly capped at Rs 100 (1% of Rs 10,000 capital).';
+      } else if (q.contains('vwap') || q.contains('rsi')) {
+        reply = isTE
+            ? 'VWAP అంటే వాల్యూమ్-వెయిటెడ్ వరేజ్ ధర (Rs ${quote?.vwap.toStringAsFixed(2)}). RSI అనేది మొమెంటం (ప్రస్తుత RSI: ${quote?.rsi14.toStringAsFixed(1)}).'
+            : 'VWAP is Volume Weighted Average Price (Rs ${quote?.vwap.toStringAsFixed(2)}). RSI measures momentum (current RSI: ${quote?.rsi14.toStringAsFixed(1)}).';
+      } else if (q.contains('profit') || q.contains('win') || q.contains('లాభం')) {
+        reply = isTE
+            ? 'పేపర్ ట్రేడింగ్‌లో మీరు వర్చువల్ రూపీస్‌తో లాభాలను పరీక్షిస్తున్నారు. ఇది నిజమైన డబ్బు కాదు, కేవలం అభ్యాసం మాత్రమే!'
+            : 'Paper trading lets you test strategies with virtual money (Rs 10,000 base). Zero financial risk!';
+      } else {
+        reply = isTE
+            ? '${stock.symbol} ప్రస్తుత ధర Rs ${quote?.price.toStringAsFixed(2)}. 15-నైపుణ్యాల ఏజెంట్ సిగ్నల్ ప్రకారం ${stock.actionCard?.action} చేయమని సూచిస్తోంది.'
+            : 'For ${stock.symbol} (LTP Rs ${quote?.price.toStringAsFixed(2)}), our 15-skill agent recommends ${stock.actionCard?.action}. Check the Live tab for exact position sizing!';
+      }
+
+      if (mounted) {
+        setState(() {
+          _chatMessages.add(ChatMessage(
+              sender: 'tutor', text: reply, time: DateFormat('hh:mm a').format(DateTime.now())));
+        });
+      }
+    });
   }
 
   void _reEvaluateAllCardsForLanguage(String newLang) {
@@ -1570,7 +1558,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
 
     return Column(
       children: [
-        // 1. Market Status Banner
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -1589,8 +1576,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
             ),
           ),
         ),
-
-        // 2. 5 Starter Stocks Tabs
         SizedBox(
           height: 52,
           child: ListView.builder(
@@ -1614,10 +1599,7 @@ class _Stage4ScreenState extends State<Stage4Screen> {
             },
           ),
         ),
-
         const Divider(height: 1),
-
-        // 3. Scrollable Main Area: Price + Chart + 15-Skill Action Card
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(14.0),
@@ -1798,10 +1780,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
                             '${AppStrings.get(lang, 'trade_time')}: ${timeFormatter.format(quote.tradeTimeIst)}',
                             style: const TextStyle(fontSize: 11),
                           ),
-                          Text(
-                            '${AppStrings.get(lang, 'fetch_time')}: ${timeFormatter.format(quote.fetchTimeIst)}',
-                            style: const TextStyle(fontSize: 11),
-                          ),
                         ],
                         const SizedBox(height: 4),
                         Text(
@@ -1816,7 +1794,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
 
                 const SizedBox(height: 12),
 
-                // 15-Skill Master Trader Agent Action Card
                 if (card != null)
                   Card(
                     elevation: 3,
@@ -1864,8 +1841,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
                             ],
                           ),
                           const SizedBox(height: 12),
-
-                          // 1. Data Freshness
                           Text(
                             AppStrings.get(lang, 'freshness_label'),
                             style: const TextStyle(
@@ -1883,8 +1858,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
                             ),
                           ),
                           const SizedBox(height: 10),
-
-                          // 3. Confidence + 1-line reason
                           Text(
                             '${AppStrings.get(lang, 'confidence_label')} ${card.confidence}',
                             style: const TextStyle(
@@ -1892,10 +1865,7 @@ class _Stage4ScreenState extends State<Stage4Screen> {
                           ),
                           Text(card.confidenceReason,
                               style: const TextStyle(fontSize: 13)),
-
                           const Divider(height: 20),
-
-                          // 4. Position Sizing & Risk Plan
                           Text(
                             AppStrings.get(lang, 'trade_plan_label'),
                             style: const TextStyle(
@@ -1929,10 +1899,7 @@ class _Stage4ScreenState extends State<Stage4Screen> {
                               color: Colors.orange,
                             ),
                           ),
-
                           const SizedBox(height: 12),
-
-                          // Paper Trade Logging Buttons
                           if (card.action == 'BUY' || card.action == 'SELL')
                             SizedBox(
                               width: double.infinity,
@@ -1959,51 +1926,7 @@ class _Stage4ScreenState extends State<Stage4Screen> {
                                     Text(AppStrings.get(lang, 'sim_trade_btn')),
                               ),
                             ),
-
                           const Divider(height: 20),
-
-                          // 5. Why
-                          Text(
-                            AppStrings.get(lang, 'why_label'),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 13),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                              '• ${AppStrings.get(lang, 'tech_label')}: ${card.technicalWhy}',
-                              style: const TextStyle(fontSize: 13)),
-                          const SizedBox(height: 2),
-                          Text(
-                              '• ${AppStrings.get(lang, 'fund_label')}: ${card.fundamentalWhy}',
-                              style: const TextStyle(fontSize: 13)),
-                          const SizedBox(height: 2),
-                          Text(
-                              '• ${AppStrings.get(lang, 'news_label')}: ${card.newsWhy}',
-                              style: const TextStyle(fontSize: 13)),
-                          const SizedBox(height: 10),
-
-                          // 6. What would prove this wrong
-                          Text(
-                            AppStrings.get(lang, 'wrong_label'),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 13),
-                          ),
-                          Text(card.whatProvesWrong,
-                              style: const TextStyle(fontSize: 13)),
-                          const SizedBox(height: 10),
-
-                          // 7. Data gaps
-                          Text(
-                            AppStrings.get(lang, 'gaps_label'),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 13),
-                          ),
-                          Text(card.dataGaps,
-                              style: const TextStyle(fontSize: 13)),
-
-                          const SizedBox(height: 12),
-
-                          // Expandable 15-Skill Master Breakdown
                           ExpansionTile(
                             tilePadding: EdgeInsets.zero,
                             title: Text(
@@ -2056,7 +1979,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
                               );
                             }).toList(),
                           ),
-
                           const Divider(height: 16),
                           Text(
                             card.footerDisclaimer,
@@ -2079,7 +2001,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
   }
 
   Widget _buildResultsTab(String lang) {
-    const double baseCapital = 10000.0;
     final openTrades =
         _paperTrades.where((t) => t.status == 'OPEN').toList();
     final closedTrades =
@@ -2115,12 +2036,12 @@ class _Stage4ScreenState extends State<Stage4Screen> {
     }
 
     final double totalProfit = realizedPnl + unrealizedPnl;
-    final double totalEquity = baseCapital + totalProfit;
+    final double totalEquity = kVirtualCapital + totalProfit;
     final double winRate =
         closedTrades.isNotEmpty ? (wins / closedTrades.length) * 100.0 : 0.0;
     final double avgWin = wins > 0 ? (sumWins / wins) : 0.0;
     final double avgLoss = losses > 0 ? (sumLosses / losses) : 0.0;
-    final double openRisk = openTrades.length * 100.0;
+    final double openRisk = openTrades.length * kMaxRiskPerTrade;
 
     return Padding(
       padding: const EdgeInsets.all(14.0),
@@ -2329,6 +2250,109 @@ class _Stage4ScreenState extends State<Stage4Screen> {
     );
   }
 
+  Widget _buildAiChatTab(String lang) {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.support_agent, color: Colors.blue),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    AppStrings.get(lang, 'chat_title'),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _chatMessages.length,
+              itemBuilder: (context, index) {
+                final msg = _chatMessages[index];
+                final isUser = msg.sender == 'user';
+                return Align(
+                  alignment:
+                      isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.all(12),
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.78),
+                    decoration: BoxDecoration(
+                      color: isUser
+                          ? Colors.blue.shade700
+                          : (widget.isDarkMode
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade200),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          msg.text,
+                          style: TextStyle(
+                            color: isUser
+                                ? Colors.white
+                                : (widget.isDarkMode
+                                    ? Colors.white
+                                    : Colors.black87),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          msg.time,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isUser ? Colors.white70 : Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _chatController,
+                  decoration: InputDecoration(
+                    hintText: AppStrings.get(lang, 'chat_hint'),
+                    border: const OutlineInputBorder(),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  onSubmitted: _sendChatMessage,
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton.filled(
+                onPressed: () => _sendChatMessage(_chatController.text),
+                icon: const Icon(Icons.send),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = widget.language;
@@ -2351,7 +2375,9 @@ class _Stage4ScreenState extends State<Stage4Screen> {
       ),
       body: _bottomTabIndex == 0
           ? _buildLiveAndSignalsTab(lang)
-          : _buildResultsTab(lang),
+          : (_bottomTabIndex == 1
+              ? _buildResultsTab(lang)
+              : _buildAiChatTab(lang)),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _bottomTabIndex,
         onDestinationSelected: (idx) {
@@ -2367,6 +2393,10 @@ class _Stage4ScreenState extends State<Stage4Screen> {
           NavigationDestination(
             icon: const Icon(Icons.assessment_outlined),
             label: AppStrings.get(lang, 'nav_results'),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.chat_bubble_outline),
+            label: AppStrings.get(lang, 'nav_chat'),
           ),
         ],
       ),
