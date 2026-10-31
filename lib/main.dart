@@ -1,12 +1,12 @@
 // ============================================================================
-// === EASY CUSTOMIZATION CONFIG (Modify here or give this section to Claude) ===
+// === EASY CUSTOMIZATION CONFIG ===
 // ============================================================================
-const double kVirtualCapital = 10000.0; // Starting paper capital in Rupees
-const double kMaxRiskPerTrade = 100.0;  // Max rupee loss per trade (1%)
-const double kMaxTotalOpenRisk = 300.0; // Max combined open risk across trades
-const double kMinSafeVolume = 500000;   // Minimum daily volume filter (5 Lakhs)
-const double kMinPennyPrice = 2.0;      // Lower penny stock price boundary
-const double kMaxPennyPrice = 20.0;     // Upper penny stock price boundary
+const double kVirtualCapital = 10000.0;
+const double kMaxRiskPerTrade = 100.0;
+const double kMaxTotalOpenRisk = 300.0;
+const double kMinSafeVolume = 500000;
+const double kMinPennyPrice = 2.0;
+const double kMaxPennyPrice = 20.0;
 
 final List> kDefaultWatchlist = [
   {'symbol': 'IDEA.NS', 'name': 'Vodafone Idea Ltd'},
@@ -97,14 +97,13 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
   }
 }
 
-// Bilingual UI Dictionary (English & Telugu)
 class AppStrings {
   static String get(String lang, String key) {
     const Map<String, Map<String, String>> dict = {
       'EN': {
-        'app_title': 'Penny Trader - Stage 5 (AI Tutor)',
-        'market_open': 'NSE Market OPEN (9:15-3:30 IST) • 10s Live Update',
-        'market_closed': 'Market CLOSED • Showing Last Session Snapshot',
+        'app_title': 'Penny Trader - Stage 5',
+        'market_open': 'NSE Market OPEN (9:15-3:30 IST) • 10s Live',
+        'market_closed': 'Market CLOSED • Last Session Snapshot',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
         'ltp': 'Last Traded Price (NSE)',
         'trade_time': 'Exchange Trade Time (IST)',
@@ -114,108 +113,108 @@ class AppStrings {
         'no_candles': 'No intraday candles available',
         'settings': 'Settings & Config',
         'theme_title': 'Dark Theme',
-        'theme_sub': 'Switch between Dark and Light screen mode',
-        'lang_title': 'App & Tutor Language',
+        'theme_sub': 'Switch between Dark and Light mode',
+        'lang_title': 'Language',
         'lang_sub': 'Choose English or Telugu (తెలుగు)',
-        'engine_info': '15-Skill Master Engine + Bilingual AI Tutor Chat (Rs 0, Zero Keys).',
+        'engine_info': '15-Skill Engine + AI Tutor (Rs 0, Zero Keys).',
         'close': 'Close',
-        'verify_title': 'Same-Minute Google Finance Test:',
+        'verify_title': 'Google Finance Test:',
         'candles_count': '5-Min Bars:',
-        'card_header': '15-SKILL TRADER AGENT ACTION CARD',
+        'card_header': '15-SKILL TRADER ACTION CARD',
         'freshness_label': '1. Data Freshness:',
         'confidence_label': '3. Confidence:',
-        'trade_plan_label': '4. Position Sizing & Exit Plan (Rs 10,000 Cap / Rs 100 Max Risk):',
-        'entry_label': 'Entry Price',
-        'shares_label': 'Position Size',
+        'trade_plan_label': '4. Position Plan (Rs 10k Cap / Rs 100 Risk):',
+        'entry_label': 'Entry',
+        'shares_label': 'Shares',
         'sl_label': 'Stop-Loss',
-        'target_label': 'Target (Min 1:2)',
-        'rr_label': 'Risk : Reward',
-        'cost_label': 'Est. Capital Used',
-        'why_label': '5. Why (1 Line Each):',
+        'target_label': 'Target',
+        'rr_label': 'R : R',
+        'cost_label': 'Cost',
+        'why_label': '5. Why:',
         'tech_label': 'Technical',
         'fund_label': 'Fundamental',
         'news_label': 'News',
-        'wrong_label': '6. What Would Prove This Wrong:',
-        'gaps_label': '7. Data Gaps:',
-        'skills_panel_title': 'View All 15 Trading Skills Analysis (Tap to Expand)',
+        'wrong_label': '6. Invalidation:',
+        'gaps_label': '7. Gaps:',
+        'skills_panel_title': 'View All 15 Skills Analysis',
         'nav_live': 'Live & Signals',
         'nav_results': 'Results Log',
         'nav_chat': 'AI Tutor Chat',
-        'log_signal_btn': 'Log Signal as Paper Trade (Max Risk Rs 100)',
-        'sim_trade_btn': 'Practice Log: Simulate Paper BUY Setup',
+        'log_signal_btn': 'Log Signal as Paper Trade',
+        'sim_trade_btn': 'Practice Log: Simulate BUY',
         'results_title': 'Paper Trading Portfolio (Base: Rs 10,000)',
-        'total_equity': 'Current Paper Equity',
-        'total_pnl': 'Total Paper Profit / Loss',
+        'total_equity': 'Current Equity',
+        'total_pnl': 'Total P&L',
         'win_rate': 'Win Rate',
-        'avg_win': 'Average Win',
-        'avg_loss': 'Average Loss',
-        'open_risk': 'Open Risk (Max Rs 300)',
-        'reset_btn': 'Reset Rs 10,000',
-        'no_trades': 'No paper trades logged yet.\nGo to Live tab and log a trade!',
+        'avg_win': 'Avg Win',
+        'avg_loss': 'Avg Loss',
+        'open_risk': 'Open Risk',
+        'reset_btn': 'Reset',
+        'no_trades': 'No paper trades logged yet.',
         'close_at_ltp': 'Square Off @ LTP',
         'sim_target': 'Test Target (+Rs)',
         'sim_sl': 'Test SL (-Rs 100)',
         'chat_title': 'Friendly Market Assistant (AI Tutor)',
-        'chat_hint': 'Ask about this stock, VWAP, Stop-Loss, or rules...',
-        'chat_welcome': 'Hello Madhav! I am your friendly market assistant. Ask me anything about your active stock, stop-loss calculations, or trading rules in English or Telugu.',
+        'chat_hint': 'Ask about this stock, VWAP, or Stop-Loss...',
+        'chat_welcome': 'Hello Madhav! Ask me anything about your active stock, stop-loss calculations, or trading rules in English or Telugu.',
       },
       'TE': {
-        'app_title': 'పెన్నీ ట్రేడర్ - దశ 5 (AI ట్యుటార్)',
-        'market_open': 'NSE మార్కెట్ తెరిచి ఉంది (9:15-3:30 IST) • 10s లైవ్',
-        'market_closed': 'మార్కెట్ మూసివేయబడింది • చివరి సెషన్ డేటా',
+        'app_title': 'పెన్నీ ట్రేడర్ - దశ 5',
+        'market_open': 'NSE మార్కెట్ తెరిచి ఉంది (9:15-3:30 IST)',
+        'market_closed': 'మార్కెట్ మూసివేయబడింది',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
         'ltp': 'చివరి ట్రేడ్ ధర (NSE)',
         'trade_time': 'ఎక్స్ఛేంజ్ ట్రేడ్ సమయం (IST)',
-        'fetch_time': 'ఫోన్ సేకరించిన సమయం (IST)',
+        'fetch_time': 'ఫోన్ సమయం (IST)',
         'chart_line': 'లైన్ గ్రాఫ్',
         'chart_candle': 'కాండిల్ స్టిక్',
-        'no_candles': 'ఇంట్రాడే కాండిల్ డేటా అందుబాటులో లేదు',
-        'settings': 'సెట్టింగ్‌లు & కాన్ఫిగరేషన్',
-        'theme_title': 'డార్క్ థీమ్ (Dark Theme)',
-        'theme_sub': 'డార్క్ లేదా లైట్ స్క్రీన్ మోడ్ మార్చండి',
-        'lang_title': 'భాష (Language)',
-        'lang_sub': 'ఇంగ్లీష్ లేదా తెలుగు ఎంచుకోండి',
-        'engine_info': '15-నైపుణ్యాల ఇంజిన్ + AI ట్యుటార్ చాట్ (Rs 0, కీ అవసరం లేదు).',
+        'no_candles': 'కాండిల్ డేటా లేదు',
+        'settings': 'సెట్టింగ్‌లు',
+        'theme_title': 'డార్క్ థీమ్',
+        'theme_sub': 'డార్క్/లైట్ మోడ్ మార్చండి',
+        'lang_title': 'భాష',
+        'lang_sub': 'ఇంగ్లీష్ లేదా తెలుగు',
+        'engine_info': '15-నైపుణ్యాల ఇంజిన్ + AI ట్యుటార్ చాట్.',
         'close': 'మూసివేయి',
-        'verify_title': 'గూగుల్ ఫైనాన్స్ ధర తనిఖీ:',
-        'candles_count': '5-నిమిషాల కాండిల్స్:',
-        'card_header': '15-నైపుణ్యాల ట్రేడర్ యాక్షన్ కార్డ్',
-        'freshness_label': '1. డేటా తాజాదనం (Data Freshness):',
-        'confidence_label': '3. నమ్మకం స్థాయి (Confidence):',
-        'trade_plan_label': '4. పొజిషన్ సైజింగ్ & ప్లాన్ (మూలధనం Rs 10,000 / గరిష్ట రిస్క్ Rs 100):',
-        'entry_label': 'ఎంట్రీ ధర',
-        'shares_label': 'షేర్ల సంఖ్య',
-        'sl_label': 'స్టాప్-లాస్ (SL)',
-        'target_label': 'టార్గెట్ (కనీసం 1:2)',
-        'rr_label': 'రిస్క్ : రివార్డ్',
-        'cost_label': 'అవసరమైన మూలధనం',
-        'why_label': '5. కారణాలు (Why):',
+        'verify_title': 'గూగుల్ ఫైనాన్స్ తనిఖీ:',
+        'candles_count': 'కాండిల్స్:',
+        'card_header': 'ట్రేడర్ యాక్షన్ కార్డ్',
+        'freshness_label': '1. డేటా తాజాదనం:',
+        'confidence_label': '3. నమ్మకం:',
+        'trade_plan_label': '4. ట్రేడ్ ప్లాన్ (రిస్క్ Rs 100):',
+        'entry_label': 'ఎంట్రీ',
+        'shares_label': 'షేర్లు',
+        'sl_label': 'స్టాప్-లాస్',
+        'target_label': 'టార్గెట్',
+        'rr_label': 'రిస్క్:రివార్డ్',
+        'cost_label': 'ఖర్చు',
+        'why_label': '5. కారణాలు:',
         'tech_label': 'టెక్నికల్',
         'fund_label': 'ఫండమెంటల్',
-        'news_label': 'వార్తలు (News)',
-        'wrong_label': '6. ఇది తప్పు అని ఏది నిరూపిస్తుంది:',
-        'gaps_label': '7. డేటా లోపాలు (Data Gaps):',
-        'skills_panel_title': 'మొత్తం 15 ట్రేడింగ్ నైపుణ్యాల విశ్లేషణ చూడండి',
-        'nav_live': 'లైవ్ & సిగ్నల్స్',
-        'nav_results': 'ఫలితాలు లాగ్',
-        'nav_chat': 'AI ట్యుటార్ చాట్',
-        'log_signal_btn': 'ఈ సిగ్నల్‌ను పేపర్ ట్రేడ్‌గా నమోదు చేయండి',
-        'sim_trade_btn': 'ప్రాక్టీస్ ట్రేడ్: పేపర్ BUY పరీక్షించండి',
-        'results_title': 'పేపర్ ట్రేడింగ్ ఫలితాలు (మూలధనం: Rs 10,000)',
-        'total_equity': 'ప్రస్తుత పేపర్ విలువ',
-        'total_pnl': 'మొత్తం పేపర్ లాభం / నష్టం',
-        'win_rate': 'గెలుపు రేటు (Win Rate)',
-        'avg_win': 'సగటు లాభం (Avg Win)',
-        'avg_loss': 'సగటు నష్టం (Avg Loss)',
-        'open_risk': 'ఓపెన్ రిస్క్ (గరిష్టం Rs 300)',
-        'reset_btn': 'రీసెట్ Rs 10,000',
-        'no_trades': 'పేపర్ ట్రేడ్‌లు ఇంకా నమోదు కాలేదు.',
-        'close_at_ltp': 'LTP వద్ద ముగించు',
-        'sim_target': 'టార్గెట్ హిట్ (+Rs)',
-        'sim_sl': 'SL హిట్ (-Rs 100)',
+        'news_label': 'వార్తలు',
+        'wrong_label': '6. తప్పు అని నిరూపించుట:',
+        'gaps_label': '7. లోపాలు:',
+        'skills_panel_title': '15 నైపుణ్యాల విశ్లేషణ చూడండి',
+        'nav_live': 'లైవ్',
+        'nav_results': 'ఫలితాలు',
+        'nav_chat': 'AI చాట్',
+        'log_signal_btn': 'పేపర్ ట్రేడ్‌గా నమోదు చేయి',
+        'sim_trade_btn': 'ప్రాక్టీస్ ట్రేడ్',
+        'results_title': 'పేపర్ ట్రేడింగ్ ఫలితాలు (Rs 10,000)',
+        'total_equity': 'మొత్తం విలువ',
+        'total_pnl': 'లాభం / నష్టం',
+        'win_rate': 'గెలుపు రేటు',
+        'avg_win': 'సగటు లాభం',
+        'avg_loss': 'సగటు నష్టం',
+        'open_risk': 'ఓపెన్ రిస్క్',
+        'reset_btn': 'రీసెట్',
+        'no_trades': 'ట్రేడ్స్ లేవు.',
+        'close_at_ltp': 'ముగించు',
+        'sim_target': 'టార్గెట్ హిట్',
+        'sim_sl': 'SL హిట్',
         'chat_title': 'ఫ్రెండ్లీ మార్కెట్ అసిస్టెంట్ (AI ట్యుటార్)',
-        'chat_hint': 'ఈ స్టాక్, VWAP, Stop-Loss గురించి అడగండి...',
-        'chat_welcome': 'నమస్తే మాధవ్! నేను మీ మార్కెట్ అసిస్టెంట్ ట్యుటార్‌ని. ఇంగ్లీష్ లేదా తెలుగులో ఏ సందేహమైనా నన్ను అడగండి.',
+        'chat_hint': 'సందేహాలు అడగండి...',
+        'chat_welcome': 'నమస్తే మాధవ్! ఏ సందేహమైనా నన్ను అడగండి.',
       },
     };
     return dict[lang]?[key] ?? dict['EN']![key]!;
@@ -379,7 +378,7 @@ class PaperTradeRecord {
 }
 
 class ChatMessage {
-  final String sender; // 'user' or 'tutor'
+  final String sender;
   final String text;
   final String time;
 
@@ -1125,12 +1124,11 @@ class _Stage5ScreenState extends State<Stage5Screen> {
   late final List<StockItem> _stocks;
 
   int _selectedIndex = 0;
-  int _bottomTabIndex = 0; // 0 = Live & Signals, 1 = Results, 2 = AI Tutor Chat
+  int _bottomTabIndex = 0;
   bool _isMarketOpen = false;
   bool _showCandlestick = true;
   Timer? _activeStockTimer;
 
-  // Paper trades & chat messages
   List<PaperTradeRecord> _paperTrades = [];
   final List<ChatMessage> _chatMessages = [];
   final TextEditingController _chatController = TextEditingController();
@@ -1401,7 +1399,6 @@ class _Stage5ScreenState extends State<Stage5Screen> {
     await _savePaperTrades();
   }
 
-  // Built-in Local AI Tutor Chat Responder (No API keys needed)
   void _sendChatMessage(String userQuery) {
     if (userQuery.trim().isEmpty) return;
     final nowStr = DateFormat('hh:mm a').format(DateTime.now());
@@ -1413,7 +1410,6 @@ class _Stage5ScreenState extends State<Stage5Screen> {
       _chatController.clear();
     });
 
-    // Generate smart contextual reply locally
     Timer(const Duration(milliseconds: 300), () {
       String reply = '';
       final q = userQuery.toLowerCase();
@@ -1421,7 +1417,7 @@ class _Stage5ScreenState extends State<Stage5Screen> {
 
       if (q.contains('stop') || q.contains('loss') || q.contains('స్టాప్')) {
         reply = isTE
-            ? 'స్టాప్-లాస్ అంటే మీ నష్టాన్ని పరిమితం చేసే భద్రతా వలయం. మా యాప్‌లో ప్రతి ట్రేడ్‌కు గరిష్ట నష్టం Rs 100 గా సెట్ చేయబడింది (${stock.symbol} ధర Rs ${quote?.price.toStringAsFixed(2)}).'
+            ? 'స్టాప్-లాస్ అంటే మీ నష్టాన్ని పరిమితం చేసే భద్రతా వలయం. మా యాప్‌లో ప్రతి ట్రేడ్‌కు గరిష్ట నష్టం Rs 100 గా సెట్ చేయబడింది.'
             : 'Stop-Loss is your pre-defined safety exit. In this app, your risk per trade is strictly capped at Rs 100 (1% of Rs 10,000 capital).';
       } else if (q.contains('vwap') || q.contains('rsi')) {
         reply = isTE
@@ -1562,8 +1558,8 @@ class _Stage5ScreenState extends State<Stage5Screen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           color: _isMarketOpen
-              ? Colors.green.withOpacity(0.2)
-              : Colors.orange.withOpacity(0.2),
+              ? Colors.green.withValues(alpha: 0.2)
+              : Colors.orange.withValues(alpha: 0.2),
           child: Text(
             _isMarketOpen
                 ? AppStrings.get(lang, 'market_open')
@@ -1756,7 +1752,7 @@ class _Stage5ScreenState extends State<Stage5Screen> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                  color: Colors.grey.withOpacity(0.3)),
+                                  color: Colors.grey.withValues(alpha: 0.3)),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: CustomPaint(
@@ -2258,7 +2254,7 @@ class _Stage5ScreenState extends State<Stage5Screen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -2440,7 +2436,7 @@ class StockChartPainter extends CustomPainter {
     }
 
     final gridPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.25)
+      ..color = Colors.grey.withValues(alpha: 0.25)
       ..strokeWidth = 1;
 
     final levels = [maxPrice, (maxPrice + minPrice) / 2, minPrice];
@@ -2522,6 +2518,6 @@ class StockChartPainter extends CustomPainter {
   bool shouldRepaint(covariant StockChartPainter oldDelegate) {
     return oldDelegate.bars != bars ||
         oldDelegate.isCandlestick != isCandlestick ||
-        oldDelegate.isDark != isDark;
+        oldDelegate.isDark == isDark;
   }
 }
