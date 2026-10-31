@@ -68,7 +68,7 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
         colorSchemeSeed: Colors.blue,
         useMaterial3: true,
       ),
-      home: Stage3Screen(
+      home: Stage4Screen(
         isDarkMode: _isDarkMode,
         language: _language,
         onThemeChanged: _updateTheme,
@@ -83,7 +83,7 @@ class AppStrings {
   static String get(String lang, String key) {
     const Map<String, Map<String, String>> dict = {
       'EN': {
-        'app_title': 'Penny Trader - Stage 3 (15-Skill AI)',
+        'app_title': 'Penny Trader - Stage 4',
         'market_open': 'NSE Market OPEN (9:15-3:30 IST) • 10s Live Update',
         'market_closed': 'Market CLOSED • Showing Last Session Snapshot',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
@@ -93,20 +93,21 @@ class AppStrings {
         'chart_line': 'Line Graph',
         'chart_candle': 'Candlestick',
         'no_candles': 'No intraday candles available',
-        'settings': 'Settings (15-Skill Local Engine)',
+        'settings': 'Settings (15-Skill Engine)',
         'theme_title': 'Dark Theme',
         'theme_sub': 'Switch between Dark and Light screen mode',
         'lang_title': 'App & Trader Agent Language',
         'lang_sub': 'Choose English or Telugu (తెలుగు)',
         'engine_info':
-            '15-Skill Master Trader Engine: Built-In Technicals, Candlesticks, Risk, Psychology, MACD/RSI/VWAP/EMA/ATR, Support/Resistance, Structure, Volume, Screener, Position Sizing & Backtesting (Rs 0, Zero Keys)',
+            '15-Skill Master Trader Engine + Paper Trading Portfolio (Base Capital Rs 10,000, Max Loss Rs 100/trade, Max Open Risk Rs 300). Never places real orders.',
         'close': 'Close',
         'verify_title': 'Same-Minute Google Finance Test:',
         'candles_count': '5-Min Bars:',
         'card_header': '15-SKILL TRADER AGENT ACTION CARD',
         'freshness_label': '1. Data Freshness:',
         'confidence_label': '3. Confidence:',
-        'trade_plan_label': '4. Position Sizing & Exit Plan (Rs 10,000 Cap / Rs 100 Max Risk):',
+        'trade_plan_label':
+            '4. Position Sizing & Exit Plan (Rs 10,000 Cap / Rs 100 Max Risk):',
         'entry_label': 'Entry Price',
         'shares_label': 'Position Size',
         'sl_label': 'Stop-Loss',
@@ -119,10 +120,28 @@ class AppStrings {
         'news_label': 'News',
         'wrong_label': '6. What Would Prove This Wrong:',
         'gaps_label': '7. Data Gaps:',
-        'skills_panel_title': 'View All 15 Trading Skills Analysis (Tap to Expand)',
+        'skills_panel_title':
+            'View All 15 Trading Skills Analysis (Tap to Expand)',
+        'nav_live': 'Live & Signals',
+        'nav_results': 'Results (Paper Log)',
+        'log_signal_btn': 'Log Signal as Paper Trade (Max Risk Rs 100)',
+        'sim_trade_btn': 'Practice Log: Simulate Paper BUY Setup',
+        'results_title': 'Paper Trading Portfolio (Base: Rs 10,000)',
+        'total_equity': 'Current Paper Equity',
+        'total_pnl': 'Total Paper Profit / Loss',
+        'win_rate': 'Win Rate',
+        'avg_win': 'Average Win',
+        'avg_loss': 'Average Loss',
+        'open_risk': 'Open Risk (Max Rs 300)',
+        'reset_btn': 'Reset Rs 10,000',
+        'no_trades':
+            'No paper trades logged yet.\nGo to the Live tab and tap "Log Signal" or "Practice Log" to test!',
+        'close_at_ltp': 'Square Off @ LTP',
+        'sim_target': 'Test Target (+Rs)',
+        'sim_sl': 'Test SL (-Rs 100)',
       },
       'TE': {
-        'app_title': 'పెన్నీ ట్రేడర్ - దశ 3 (15-నైపుణ్యాల AI)',
+        'app_title': 'పెన్నీ ట్రేడర్ - దశ 4',
         'market_open': 'NSE మార్కెట్ తెరిచి ఉంది (9:15-3:30 IST) • 10s లైవ్',
         'market_closed': 'మార్కెట్ మూసివేయబడింది • చివరి సెషన్ డేటా',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
@@ -138,14 +157,15 @@ class AppStrings {
         'lang_title': 'భాష (Language)',
         'lang_sub': 'ఇంగ్లీష్ లేదా తెలుగు ఎంచుకోండి',
         'engine_info':
-            '15-నైపుణ్యాల మాస్టర్ ట్రేడర్ ఇంజిన్: టెక్నికల్, కాండిల్ స్టిక్, రిస్క్, సైకాలజీ, MACD/RSI/VWAP/ATR, సపోర్ట్/రెసిస్టెన్స్, వాల్యూమ్, పొజిషన్ సైజింగ్ & బ్యాక్‌టెస్టింగ్ (Rs 0, కీ అవసరం లేదు)',
+            '15-నైపుణ్యాల మాస్టర్ ట్రేడర్ + పేపర్ ట్రేడింగ్ లాగ్ (మూలధనం Rs 10,000, గరిష్ట నష్టం Rs 100/ట్రేడ్, మొత్తం ఓపెన్ రిస్క్ Rs 300). నిజమైన ఆర్డర్లు పెట్టదు.',
         'close': 'మూసివేయి',
         'verify_title': 'గూగుల్ ఫైనాన్స్ ధర తనిఖీ:',
         'candles_count': '5-నిమిషాల కాండిల్స్:',
         'card_header': '15-నైపుణ్యాల ట్రేడర్ యాక్షన్ కార్డ్',
         'freshness_label': '1. డేటా తాజాదనం (Data Freshness):',
         'confidence_label': '3. నమ్మకం స్థాయి (Confidence):',
-        'trade_plan_label': '4. పొజిషన్ సైజింగ్ & ప్లాన్ (మూలధనం Rs 10,000 / గరిష్ట రిస్క్ Rs 100):',
+        'trade_plan_label':
+            '4. పొజిషన్ సైజింగ్ & ప్లాన్ (మూలధనం Rs 10,000 / గరిష్ట రిస్క్ Rs 100):',
         'entry_label': 'ఎంట్రీ ధర',
         'shares_label': 'షేర్ల సంఖ్య',
         'sl_label': 'స్టాప్-లాస్ (SL)',
@@ -158,7 +178,25 @@ class AppStrings {
         'news_label': 'వార్తలు (News)',
         'wrong_label': '6. ఇది తప్పు అని ఏది నిరూపిస్తుంది:',
         'gaps_label': '7. డేటా లోపాలు (Data Gaps):',
-        'skills_panel_title': 'మొత్తం 15 ట్రేడింగ్ నైపుణ్యాల విశ్లేషణ చూడండి (ఇక్కడ నొక్కండి)',
+        'skills_panel_title':
+            'మొత్తం 15 ట్రేడింగ్ నైపుణ్యాల విశ్లేషణ చూడండి (ఇక్కడ నొక్కండి)',
+        'nav_live': 'లైవ్ & సిగ్నల్స్',
+        'nav_results': 'ఫలితాలు (Paper Log)',
+        'log_signal_btn': 'ఈ సిగ్నల్‌ను పేపర్ ట్రేడ్‌గా నమోదు చేయండి',
+        'sim_trade_btn': 'ప్రాక్టీస్ ట్రేడ్: పేపర్ BUY పరీక్షించండి',
+        'results_title': 'పేపర్ ట్రేడింగ్ ఫలితాలు (మూలధనం: Rs 10,000)',
+        'total_equity': 'ప్రస్తుత పేపర్ విలువ',
+        'total_pnl': 'మొత్తం పేపర్ లాభం / నష్టం',
+        'win_rate': 'గెలుపు రేటు (Win Rate)',
+        'avg_win': 'సగటు లాభం (Avg Win)',
+        'avg_loss': 'సగటు నష్టం (Avg Loss)',
+        'open_risk': 'ఓపెన్ రిస్క్ (గరిష్టం Rs 300)',
+        'reset_btn': 'రీసెట్ Rs 10,000',
+        'no_trades':
+            'ఇంకా పేపర్ ట్రేడ్‌లు నమోదు కాలేదు.\nలైవ్ ట్యాబ్‌లో "ప్రాక్టీస్ ట్రేడ్" బటన్ నొక్కి పరీక్షించండి!',
+        'close_at_ltp': 'LTP వద్ద ముగించు',
+        'sim_target': 'టార్గెట్ హిట్ (+Rs)',
+        'sim_sl': 'SL హిట్ (-Rs 100)',
       },
     };
     return dict[lang]?[key] ?? dict['EN']![key]!;
@@ -197,10 +235,9 @@ class SkillCheckItem {
   });
 }
 
-// Structured 7-Point Action Card + 15-Skill Breakdown
 class ActionCardData {
   final String dataFreshness;
-  final String action; // Strictly BUY, SELL, WAIT, or AVOID
+  final String action; // BUY, SELL, WAIT, AVOID
   final String confidence; // Low, Medium, High
   final String confidenceReason;
   final double entryPrice;
@@ -238,6 +275,90 @@ class ActionCardData {
     required this.footerDisclaimer,
     required this.fifteenSkillsReport,
   });
+}
+
+// Persistent Paper Trade Record (Stored in SharedPreferences JSON)
+class PaperTradeRecord {
+  final String id;
+  final String symbol;
+  final String action; // BUY or SELL
+  final String confidence;
+  final bool isDelayedPractice;
+  final double entryPrice;
+  final int shares;
+  final double stopLoss;
+  final double targetPrice;
+  final double plannedMaxLoss;
+  final String entryTimeIst;
+  String status; // OPEN, TARGET_HIT, SL_HIT, SQUARED_OFF
+  double? exitPrice;
+  String? exitTimeIst;
+  double realizedPnl;
+
+  PaperTradeRecord({
+    required this.id,
+    required this.symbol,
+    required this.action,
+    required this.confidence,
+    required this.isDelayedPractice,
+    required this.entryPrice,
+    required this.shares,
+    required this.stopLoss,
+    required this.targetPrice,
+    required this.plannedMaxLoss,
+    required this.entryTimeIst,
+    this.status = 'OPEN',
+    this.exitPrice,
+    this.exitTimeIst,
+    this.realizedPnl = 0.0,
+  });
+
+  double currentUnrealizedPnl(double currentLtp) {
+    if (status != 'OPEN') return realizedPnl;
+    final rawPnl = action == 'BUY'
+        ? (currentLtp - entryPrice) * shares
+        : (entryPrice - currentLtp) * shares;
+    // Cap loss at -Rs 100 per trade rule
+    return math.max(-100.0, rawPnl);
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'symbol': symbol,
+        'action': action,
+        'confidence': confidence,
+        'isDelayedPractice': isDelayedPractice,
+        'entryPrice': entryPrice,
+        'shares': shares,
+        'stopLoss': stopLoss,
+        'targetPrice': targetPrice,
+        'plannedMaxLoss': plannedMaxLoss,
+        'entryTimeIst': entryTimeIst,
+        'status': status,
+        'exitPrice': exitPrice,
+        'exitTimeIst': exitTimeIst,
+        'realizedPnl': realizedPnl,
+      };
+
+  factory PaperTradeRecord.fromJson(Map<String, dynamic> j) {
+    return PaperTradeRecord(
+      id: (j['id'] ?? '').toString(),
+      symbol: (j['symbol'] ?? 'IDEA.NS').toString(),
+      action: (j['action'] ?? 'BUY').toString(),
+      confidence: (j['confidence'] ?? 'Medium').toString(),
+      isDelayedPractice: j['isDelayedPractice'] == true,
+      entryPrice: (j['entryPrice'] as num?)?.toDouble() ?? 0.0,
+      shares: (j['shares'] as num?)?.toInt() ?? 1,
+      stopLoss: (j['stopLoss'] as num?)?.toDouble() ?? 0.0,
+      targetPrice: (j['targetPrice'] as num?)?.toDouble() ?? 0.0,
+      plannedMaxLoss: (j['plannedMaxLoss'] as num?)?.toDouble() ?? 100.0,
+      entryTimeIst: (j['entryTimeIst'] ?? '').toString(),
+      status: (j['status'] ?? 'OPEN').toString(),
+      exitPrice: (j['exitPrice'] as num?)?.toDouble(),
+      exitTimeIst: j['exitTimeIst']?.toString(),
+      realizedPnl: (j['realizedPnl'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
 }
 
 class StockQuote {
@@ -465,7 +586,6 @@ class YahooDataProvider implements MarketDataProvider {
     return ema;
   }
 
-  // Skill 6: MACD (12, 26, 9) Momentum & Trend Calculation
   List<double> _calculateMacd(List<OhlcvBar> bars) {
     if (bars.length < 5) return [0.0, 0.0, 0.0];
     const double k12 = 2.0 / 13.0;
@@ -527,7 +647,6 @@ class YahooDataProvider implements MarketDataProvider {
     return math.max(0.05, avg);
   }
 
-  // Skill 8: Support & Resistance Zone Calculation (Recent 20-bar Swing Low & Swing High)
   List<double> _calculateSupportResistance(
       List<OhlcvBar> bars, double dayLow, double dayHigh) {
     if (bars.length < 5) return [dayLow, dayHigh];
@@ -541,7 +660,6 @@ class YahooDataProvider implements MarketDataProvider {
     return [sup, res];
   }
 
-  // Skill 9: Market Structure Analysis (HH/HL Uptrend, LH/LL Downtrend, or Sideways Range)
   List<String> _analyzeMarketStructure(List<OhlcvBar> bars) {
     if (bars.length < 12) {
       return [
@@ -585,7 +703,6 @@ class YahooDataProvider implements MarketDataProvider {
     }
   }
 
-  // Skill 7: Price Action Trading (Breakouts, Pullbacks, Rejection Candles)
   List<String> _analyzePriceAction(List<OhlcvBar> bars, double price,
       double support, double resistance, double vwap) {
     if (bars.isEmpty) {
@@ -634,7 +751,6 @@ class YahooDataProvider implements MarketDataProvider {
     return latestVol / avgPrev;
   }
 
-  // Skill 2: Candlestick Analysis contextualized with Support/Resistance
   List<String> _detectCandlePattern(
       List<OhlcvBar> bars, double support, double resistance) {
     if (bars.length < 2) {
@@ -688,7 +804,6 @@ class YahooDataProvider implements MarketDataProvider {
         : ['Bearish Red Bar', 'రెడ్ బేరిష్ కాండిల్'];
   }
 
-  // Skill 14: Intraday Historical Backtesting across earlier 5m bars
   List<num> _runIntradayBacktest(List<OhlcvBar> bars) {
     if (bars.length < 15) return [0, 0.0];
     int signals = 0;
@@ -701,7 +816,6 @@ class YahooDataProvider implements MarketDataProvider {
       final cur = slice.last;
       final prev = slice[slice.length - 2];
 
-      // Test EMA-9/21 trend + momentum continuation over next 3 bars
       if (ema9 > ema21 && cur.close > prev.high) {
         signals++;
         final double futureHigh = math.max(
@@ -734,7 +848,6 @@ class LocalPennyTraderAgent {
         ? ((quote.price - quote.previousClose) / quote.previousClose) * 100.0
         : 0.0;
 
-    // 1. Data Freshness (>5m => PRACTICE ONLY - DELAYED DATA)
     final String freshness = quote.isDelayedOver5Min
         ? (isTE
             ? 'PRACTICE ONLY - DELAYED DATA (డేటా ${quote.delayMinutes} నిమిషాలు ఆలస్యంగా ఉంది - ప్రాక్టీస్ మాత్రమే)'
@@ -743,14 +856,12 @@ class LocalPennyTraderAgent {
             ? 'LIVE DATA (డేటా తాజాగా ఉంది — ${quote.delayMinutes} నిమిషాల తేడా)'
             : 'LIVE DATA (${quote.delayMinutes} min delay — within 5-minute threshold)');
 
-    // Skill 11: Stock Screening Rules (Price Rs 2-20, Vol >= 5L, Circuit Check, Manipulation Check)
     final bool isLiquid = quote.totalDayVolume >= 500000;
     final bool isPennyRange = quote.price >= 2.0 && quote.price <= 20.0;
     final bool isNearCircuit = dayChangePct.abs() >= 4.75;
     final bool isUnexplainedSpike =
         quote.volumeSpikeRatio >= 3.0 && dayChangePct.abs() >= 2.5;
 
-    // Skill 1, 6, 7, 8, 9: Technical, Indicator, Structure & Price Action Confluence
     final bool bullishIndicators = quote.price > quote.vwap &&
         quote.ema9 >= quote.ema21 &&
         quote.macdHist >= 0 &&
@@ -763,33 +874,31 @@ class LocalPennyTraderAgent {
         quote.rsi14 <= 48.0 &&
         quote.rsi14 >= 32.0;
 
-    // Skill 3, 12, 13: Risk Management, Entry/Exit & Position Sizing (Rs 10,000 Capital, Rs 100 Max Risk = 1%)
     const double virtualCapital = 10000.0;
     const double maxRiskRupees = 100.0; // 1% of Rs 10,000
     final double stopDistance =
         math.max(0.10, math.max(quote.atr14 * 1.5, quote.price * 0.015));
 
     final double entry = quote.price;
+    final bool leanBull = quote.price >= quote.vwap;
     final double stopLoss =
-        bullishIndicators ? (entry - stopDistance) : (entry + stopDistance);
-    final double targetPrice = bullishIndicators
-        ? (entry + stopDistance * 2.2) // 1 : 2.2 Risk-Reward
-        : (entry - stopDistance * 2.2);
+        leanBull ? (entry - stopDistance) : (entry + stopDistance);
+    final double targetPrice =
+        leanBull ? (entry + stopDistance * 2.2) : (entry - stopDistance * 2.2);
 
     final double riskPerShare = (entry - stopLoss).abs();
     final double rewardPerShare = (targetPrice - entry).abs();
     final double rrRatio =
         riskPerShare > 0 ? (rewardPerShare / riskPerShare) : 0.0;
 
-    // Position Size = Floor(Rs 100 / Risk per share), also capped so Position Cost <= Rs 10,000 capital
     int sharesByRisk =
-        riskPerShare > 0 ? (maxRiskRupees / riskPerShare).floor() : 0;
+        riskPerShare > 0 ? (maxRiskRupees / riskPerShare).floor() : 1;
     final int maxSharesByCapital =
-        entry > 0 ? (virtualCapital / entry).floor() : 0;
-    final int finalShares = math.min(sharesByRisk, maxSharesByCapital);
+        entry > 0 ? (virtualCapital / entry).floor() : 1;
+    final int finalShares =
+        math.max(1, math.min(sharesByRisk, maxSharesByCapital));
     final double estimatedCost = finalShares * entry;
 
-    // Decision Engine across all 15 Skills
     String action = 'WAIT';
     String confidence = 'Low';
     String confidenceReason = '';
@@ -838,11 +947,10 @@ class LocalPennyTraderAgent {
           : 'Skill 15 (Trading Discipline): Indicators are mixed near VWAP — do not force a trade; wait for a confirmed setup.';
     }
 
-    // Build the 15-Skill Diagnostic Report so you can inspect every skill's live output
     final List<SkillCheckItem> skillsReport = [
       SkillCheckItem(
         number: 1,
-        title: isTE ? '1. టెక్నికల్ అనాలిసిస్ (Technical Analysis)' : '1. Technical Analysis',
+        title: isTE ? '1. టెక్నికల్ అనాలిసిస్' : '1. Technical Analysis',
         finding: isTE
             ? 'ధర Rs ${quote.price.toStringAsFixed(2)} (${dayChangePct >= 0 ? "+" : ""}${dayChangePct.toStringAsFixed(2)}%), Day High Rs ${quote.dayHigh.toStringAsFixed(2)}, Low Rs ${quote.dayLow.toStringAsFixed(2)}.'
             : 'Price Rs ${quote.price.toStringAsFixed(2)} (${dayChangePct >= 0 ? "+" : ""}${dayChangePct.toStringAsFixed(2)}%), Day Range Rs ${quote.dayLow.toStringAsFixed(2)}–Rs ${quote.dayHigh.toStringAsFixed(2)}.',
@@ -850,13 +958,13 @@ class LocalPennyTraderAgent {
       ),
       SkillCheckItem(
         number: 2,
-        title: isTE ? '2. కాండిల్ స్టిక్ విశ్లేషణ (Candlestick Analysis)' : '2. Candlestick Analysis',
+        title: isTE ? '2. కాండిల్ స్టిక్ విశ్లేషణ' : '2. Candlestick Analysis',
         finding: isTE ? quote.candlePatternTE : quote.candlePatternEN,
         isPositive: !quote.candlePatternEN.contains('Doji'),
       ),
       SkillCheckItem(
         number: 3,
-        title: isTE ? '3. రిస్క్ మేనేజ్‌మెంట్ (Risk Management)' : '3. Risk Management',
+        title: isTE ? '3. రిస్క్ మేనేజ్‌మెంట్' : '3. Risk Management',
         finding: isTE
             ? 'మూలధనం Rs 10,000 లో 1% రిస్క్ = గరిష్ట నష్టం Rs 100 మాత్రమే. స్టాప్-లాస్: Rs ${stopLoss.toStringAsFixed(2)}.'
             : '1% of Rs 10,000 capital = Rs 100 max planned loss. Stop-Loss set at Rs ${stopLoss.toStringAsFixed(2)} (1:${rrRatio.toStringAsFixed(1)} R:R).',
@@ -864,7 +972,7 @@ class LocalPennyTraderAgent {
       ),
       SkillCheckItem(
         number: 4,
-        title: isTE ? '4. ట్రేడింగ్ సైకాలజీ (Trading Psychology)' : '4. Trading Psychology',
+        title: isTE ? '4. ట్రేడింగ్ సైకాలజీ' : '4. Trading Psychology',
         finding: isTE
             ? (isUnexplainedSpike
                 ? 'హెచ్చరిక: ఆకస్మిక ధర పెరుగుదల (FOMO) వెంబడించవద్దు.'
@@ -876,7 +984,7 @@ class LocalPennyTraderAgent {
       ),
       SkillCheckItem(
         number: 5,
-        title: isTE ? '5. ఫండమెంటల్ అనాలిసిస్ (Fundamental Analysis)' : '5. Fundamental Analysis',
+        title: isTE ? '5. ఫండమెంటల్ అనాలిసిస్' : '5. Fundamental Analysis',
         finding: isTE
             ? '<data> లో ఆదాయం, నికర లాభం, EPS, P/E మరియు బ్యాలెన్స్ షీట్ వివరాలు లేవు (ఉచిత ఫీడ్ పరిమితి).'
             : 'Revenue, net profit, EPS, P/E & debt are MISSING in <data> free feed — explicitly flagged.',
@@ -884,34 +992,34 @@ class LocalPennyTraderAgent {
       ),
       SkillCheckItem(
         number: 6,
-        title: isTE ? '6. ఇండికేటర్ అనాలిసిస్ (Indicator Analysis)' : '6. Indicator Analysis',
+        title: isTE ? '6. ఇండికేటర్ అనాలిసిస్' : '6. Indicator Analysis',
         finding:
             'VWAP: Rs ${quote.vwap.toStringAsFixed(2)} | EMA9/21: ${quote.ema9.toStringAsFixed(2)}/${quote.ema21.toStringAsFixed(2)} | RSI: ${quote.rsi14.toStringAsFixed(1)} | MACD Hist: ${quote.macdHist.toStringAsFixed(3)} | ATR: Rs ${quote.atr14.toStringAsFixed(2)}',
         isPositive: bullishIndicators || bearishIndicators,
       ),
       SkillCheckItem(
         number: 7,
-        title: isTE ? '7. ప్రైస్ యాక్షన్ ట్రేడింగ్ (Price Action)' : '7. Price Action Trading',
+        title: isTE ? '7. ప్రైస్ యాక్షన్ ట్రేడింగ్' : '7. Price Action Trading',
         finding: isTE ? quote.priceActionTE : quote.priceActionEN,
         isPositive: true,
       ),
       SkillCheckItem(
         number: 8,
-        title: isTE ? '8. సపోర్ట్ & రెసిస్టెన్స్ (Support & Resistance)' : '8. Support & Resistance Analysis',
+        title: isTE ? '8. సపోర్ట్ & రెసిస్టెన్స్' : '8. Support & Resistance',
         finding: isTE
-            ? 'సపోర్ట్ ప్రాంతం: Rs ${quote.supportLevel.toStringAsFixed(2)} | రెసిస్టెన్స్ ప్రాంతం: Rs ${quote.resistanceLevel.toStringAsFixed(2)} (ఇవి గ్యారెంటీ పాయింట్లు కావు).'
-            : 'Support Area: Rs ${quote.supportLevel.toStringAsFixed(2)} | Resistance Area: Rs ${quote.resistanceLevel.toStringAsFixed(2)} (zones, not guaranteed turns).',
+            ? 'సపోర్ట్ ప్రాంతం: Rs ${quote.supportLevel.toStringAsFixed(2)} | రెసిస్టెన్స్ ప్రాంతం: Rs ${quote.resistanceLevel.toStringAsFixed(2)}.'
+            : 'Support Area: Rs ${quote.supportLevel.toStringAsFixed(2)} | Resistance Area: Rs ${quote.resistanceLevel.toStringAsFixed(2)}.',
         isPositive: true,
       ),
       SkillCheckItem(
         number: 9,
-        title: isTE ? '9. మార్కెట్ నిర్మాణం (Market Structure)' : '9. Market Structure Analysis',
+        title: isTE ? '9. మార్కెట్ నిర్మాణం' : '9. Market Structure',
         finding: isTE ? quote.marketStructureTE : quote.marketStructureEN,
         isPositive: !quote.marketStructureEN.contains('Sideways'),
       ),
       SkillCheckItem(
         number: 10,
-        title: isTE ? '10. వాల్యూమ్ అనాలిసిస్ (Volume Analysis)' : '10. Volume Analysis',
+        title: isTE ? '10. వాల్యూమ్ అనాలిసిస్' : '10. Volume Analysis',
         finding: isTE
             ? 'మొత్తం వాల్యూమ్: ${quote.totalDayVolume} షేర్లు | వాల్యూమ్ స్పైక్: ${quote.volumeSpikeRatio.toStringAsFixed(2)}x సగటు.'
             : 'Day Volume: ${quote.totalDayVolume} shares | Current Bar vs 10-Bar Avg: ${quote.volumeSpikeRatio.toStringAsFixed(2)}x.',
@@ -919,15 +1027,15 @@ class LocalPennyTraderAgent {
       ),
       SkillCheckItem(
         number: 11,
-        title: isTE ? '11. స్టాక్ స్క్రీనింగ్ (Stock Screening)' : '11. Stock Screening',
+        title: isTE ? '11. స్టాక్ స్క్రీనింగ్' : '11. Stock Screening',
         finding: isTE
-            ? 'ధర Rs 2–20 ఫిల్టర్: ${isPennyRange ? "పాస్" : "విఫలం"} | లిక్విడిటీ (>5L): ${isLiquid ? "పాస్" : "విఫలం"} | సర్క్యూట్ సేఫ్టీ: ${!isNearCircuit ? "పాస్" : "విఫలం"}.'
+            ? 'ధర Rs 2–20: ${isPennyRange ? "పాస్" : "విఫలం"} | లిక్విడిటీ (>5L): ${isLiquid ? "పాస్" : "విఫలం"} | సర్క్యూట్ సేఫ్టీ: ${!isNearCircuit ? "పాస్" : "విఫలం"}.'
             : 'Penny Cap (Rs 2–20): ${isPennyRange ? "PASS" : "FAIL"} | Liquidity (>=5L): ${isLiquid ? "PASS" : "FAIL"} | Circuit Safety: ${!isNearCircuit ? "PASS" : "FAIL"}.',
         isPositive: isPennyRange && isLiquid && !isNearCircuit,
       ),
       SkillCheckItem(
         number: 12,
-        title: isTE ? '12. ఎంట్రీ & ఎగ్జిట్ వ్యూహం (Entry & Exit Strategy)' : '12. Entry & Exit Strategy',
+        title: isTE ? '12. ఎంట్రీ & ఎగ్జిట్ వ్యూహం' : '12. Entry & Exit Strategy',
         finding: isTE
             ? 'ఎంట్రీ: Rs ${entry.toStringAsFixed(2)} | SL: Rs ${stopLoss.toStringAsFixed(2)} | టార్గెట్: Rs ${targetPrice.toStringAsFixed(2)} | 3:20 PM లోపు నిష్క్రమణ.'
             : 'Pre-defined Entry: Rs ${entry.toStringAsFixed(2)} | SL: Rs ${stopLoss.toStringAsFixed(2)} | Target: Rs ${targetPrice.toStringAsFixed(2)} | Exit by 3:20 PM IST.',
@@ -935,7 +1043,7 @@ class LocalPennyTraderAgent {
       ),
       SkillCheckItem(
         number: 13,
-        title: isTE ? '13. పొజిషన్ సైజింగ్ (Position Sizing)' : '13. Position Sizing',
+        title: isTE ? '13. పొజిషన్ సైజింగ్' : '13. Position Sizing',
         finding: isTE
             ? 'షేరుకు రిస్క్ = Rs ${riskPerShare.toStringAsFixed(2)} | Rs 100 రిస్క్ కోసం షేర్లు = $finalShares షేర్లు (విలువ Rs ${estimatedCost.toStringAsFixed(0)}).'
             : 'Risk/share = Rs ${riskPerShare.toStringAsFixed(2)} | Rs 100 ÷ Rs ${riskPerShare.toStringAsFixed(2)} = $finalShares shares (Cost Rs ${estimatedCost.toStringAsFixed(0)} of Rs 10,000).',
@@ -943,22 +1051,18 @@ class LocalPennyTraderAgent {
       ),
       SkillCheckItem(
         number: 14,
-        title: isTE ? '14. బ్యాక్‌టెస్టింగ్ (Backtesting)' : '14. Backtesting (Today Intraday Bars)',
+        title: isTE ? '14. బ్యాక్‌టెస్టింగ్' : '14. Backtesting (Today Intraday)',
         finding: isTE
-            ? 'ఈరోజు కాండిల్స్‌లో ${quote.backtestSampleCount} సార్లు పరీక్షించగా గెలుపు రేటు: ${quote.backtestWinRate.toStringAsFixed(0)}% (భవిష్యత్తు లాభానికి గ్యారెంటీ కాదు).'
-            : 'Tested across ${quote.backtestSampleCount} intraday setups today — Win Rate: ${quote.backtestWinRate.toStringAsFixed(0)}% (past data cannot guarantee future profit).',
+            ? 'ఈరోజు కాండిల్స్‌లో ${quote.backtestSampleCount} సార్లు పరీక్షించగా గెలుపు రేటు: ${quote.backtestWinRate.toStringAsFixed(0)}%.'
+            : 'Tested across ${quote.backtestSampleCount} intraday setups today — Win Rate: ${quote.backtestWinRate.toStringAsFixed(0)}%.',
         isPositive: quote.backtestWinRate >= 50.0,
       ),
       SkillCheckItem(
         number: 15,
-        title: isTE ? '15. ట్రేడింగ్ క్రమశిక్షణ (Trading Discipline)' : '15. Trading Discipline',
+        title: isTE ? '15. ట్రేడింగ్ క్రమశిక్షణ' : '15. Trading Discipline',
         finding: isTE
-            ? (action == 'WAIT' || action == 'AVOID'
-                ? 'సరైన అవకాశం లేనప్పుడు ట్రేడ్ చేయకపోవడమే ఉత్తమ క్రమశిక్షణ.'
-                : 'నియమాలను పాటిస్తూ స్టాప్-లాస్ మరియు రిస్క్ పరిమితిని గౌరవించండి.')
-            : (action == 'WAIT' || action == 'AVOID'
-                ? 'Discipline active: Accepting that not every moment offers a valid setup; standing aside.'
-                : 'Discipline active: Respecting stop-loss and Rs 100 risk limit without revenge trading.'),
+            ? 'నియమాలను పాటిస్తూ స్టాప్-లాస్ (Rs 100/ట్రేడ్, Rs 300 మొత్తం) గౌరవించండి.'
+            : 'Discipline active: Respecting Rs 100 per-trade and Rs 300 total open risk limits.',
         isPositive: true,
       ),
     ];
@@ -988,8 +1092,8 @@ class LocalPennyTraderAgent {
                 : 'Stance changes only if price breaks Resistance Rs ${quote.resistanceLevel.toStringAsFixed(2)} or Support Rs ${quote.supportLevel.toStringAsFixed(2)} with volume confirmation.');
 
     final String gapsLine = isTE
-        ? '1) కంపెనీ ఫండమెంటల్స్ (P/E, EPS, అప్పు), 2) అధికారిక NSE/BSE వార్తలు, 3) ఆర్డర్ బుక్ బిడ్-ఆస్క్ స్ప్రెడ్ (స్లిప్పేజ్ రిస్క్), 4) లైవ్ ASM/GSM జాబితా.'
-        : 'Missing in <data>: (1) Fundamentals (EPS, P/E, Debt), (2) Official NSE/BSE News, (3) Order-book bid-ask spread (execution slippage risk), (4) Live ASM/GSM surveillance list.';
+        ? '1) కంపెనీ ఫండమెంటల్స్ (P/E, EPS, అప్పు), 2) అధికారిక NSE/BSE వార్తలు, 3) ఆర్డర్ బుక్ బిడ్-ఆస్క్ స్ప్రెడ్, 4) లైవ్ ASM/GSM జాబితా.'
+        : 'Missing in <data>: (1) Fundamentals (EPS, P/E, Debt), (2) Official NSE/BSE News, (3) Order-book bid-ask spread, (4) Live ASM/GSM surveillance list.';
 
     return ActionCardData(
       dataFreshness: freshness,
@@ -1035,13 +1139,13 @@ class StockItem {
   });
 }
 
-class Stage3Screen extends StatefulWidget {
+class Stage4Screen extends StatefulWidget {
   final bool isDarkMode;
   final String language;
   final ValueChanged<bool> onThemeChanged;
   final ValueChanged<String> onLanguageChanged;
 
-  const Stage3Screen({
+  const Stage4Screen({
     super.key,
     required this.isDarkMode,
     required this.language,
@@ -1050,10 +1154,10 @@ class Stage3Screen extends StatefulWidget {
   });
 
   @override
-  State<Stage3Screen> createState() => _Stage3ScreenState();
+  State<Stage4Screen> createState() => _Stage4ScreenState();
 }
 
-class _Stage3ScreenState extends State<Stage3Screen> {
+class _Stage4ScreenState extends State<Stage4Screen> {
   final MarketDataProvider _dataProvider = YahooDataProvider();
 
   final List<StockItem> _stocks = [
@@ -1064,7 +1168,9 @@ class _Stage3ScreenState extends State<Stage3Screen> {
     StockItem(symbol: 'GTLINFRA.NS', name: 'GTL Infrastructure Ltd'),
   ];
 
+  List<PaperTradeRecord> _paperTrades = [];
   int _selectedIndex = 0;
+  int _bottomTabIndex = 0; // 0 = Live & Signals, 1 = Results (Paper Log)
   bool _isMarketOpen = false;
   bool _showCandlestick = true;
   Timer? _activeStockTimer;
@@ -1072,6 +1178,7 @@ class _Stage3ScreenState extends State<Stage3Screen> {
   @override
   void initState() {
     super.initState();
+    _loadSavedPaperTrades();
     _initializeAndStartPolling();
   }
 
@@ -1079,6 +1186,27 @@ class _Stage3ScreenState extends State<Stage3Screen> {
   void dispose() {
     _activeStockTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _loadSavedPaperTrades() async {
+    final prefs = await SharedPreferences.getInstance();
+    final rawList = prefs.getStringList('paper_trades_v4') ?? [];
+    final loaded = <PaperTradeRecord>[];
+    for (final item in rawList) {
+      try {
+        loaded.add(PaperTradeRecord.fromJson(jsonDecode(item)));
+      } catch (_) {}
+    }
+    if (!mounted) return;
+    setState(() {
+      _paperTrades = loaded;
+    });
+  }
+
+  Future<void> _savePaperTrades() async {
+    final prefs = await SharedPreferences.getInstance();
+    final rawList = _paperTrades.map((t) => jsonEncode(t.toJson())).toList();
+    await prefs.setStringList('paper_trades_v4', rawList);
   }
 
   bool _checkMarketHoursNow() {
@@ -1140,6 +1268,7 @@ class _Stage3ScreenState extends State<Stage3Screen> {
         stock.isLoading = false;
         stock.errorMessage = '';
       });
+      _checkOpenPaperTradesAgainstPrice(stock.symbol, quote.price);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -1147,6 +1276,186 @@ class _Stage3ScreenState extends State<Stage3Screen> {
         stock.isLoading = false;
       });
     }
+  }
+
+  // Automatically checks if any OPEN paper trade hit Target, Stop-Loss, or 3:20 PM Square-Off
+  void _checkOpenPaperTradesAgainstPrice(String symbol, double latestPrice) {
+    bool changed = false;
+    final nowIst =
+        DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+    final timeStr = DateFormat('dd MMM, hh:mm:ss a').format(nowIst);
+    final bool isPastSquareOffTime = _isMarketOpen &&
+        (nowIst.hour > 15 || (nowIst.hour == 15 && nowIst.minute >= 20));
+
+    for (final t in _paperTrades) {
+      if (t.status != 'OPEN' || t.symbol != symbol) continue;
+
+      if (t.action == 'BUY') {
+        if (latestPrice >= t.targetPrice) {
+          t.status = 'TARGET_HIT';
+          t.exitPrice = t.targetPrice;
+          t.exitTimeIst = timeStr;
+          t.realizedPnl = (t.targetPrice - t.entryPrice) * t.shares;
+          changed = true;
+        } else if (latestPrice <= t.stopLoss) {
+          t.status = 'SL_HIT';
+          t.exitPrice = t.stopLoss;
+          t.exitTimeIst = timeStr;
+          t.realizedPnl =
+              math.max(-100.0, (t.stopLoss - t.entryPrice) * t.shares);
+          changed = true;
+        }
+      } else if (t.action == 'SELL') {
+        if (latestPrice <= t.targetPrice) {
+          t.status = 'TARGET_HIT';
+          t.exitPrice = t.targetPrice;
+          t.exitTimeIst = timeStr;
+          t.realizedPnl = (t.entryPrice - t.targetPrice) * t.shares;
+          changed = true;
+        } else if (latestPrice >= t.stopLoss) {
+          t.status = 'SL_HIT';
+          t.exitPrice = t.stopLoss;
+          t.exitTimeIst = timeStr;
+          t.realizedPnl =
+              math.max(-100.0, (t.entryPrice - t.stopLoss) * t.shares);
+          changed = true;
+        }
+      }
+
+      if (t.status == 'OPEN' && isPastSquareOffTime) {
+        t.status = 'SQUARED_OFF';
+        t.exitPrice = latestPrice;
+        t.exitTimeIst = timeStr;
+        final raw = t.action == 'BUY'
+            ? (latestPrice - t.entryPrice) * t.shares
+            : (t.entryPrice - latestPrice) * t.shares;
+        t.realizedPnl = math.max(-100.0, raw);
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      setState(() {});
+      _savePaperTrades();
+    }
+  }
+
+  // Enforces Max Loss Rs 100/trade and Max Open Risk Rs 300 (At most 3 open trades, signal-quality gated)
+  void _logPaperTrade(StockItem stock, {required bool forcePracticeBuy}) {
+    final quote = stock.quote;
+    final card = stock.actionCard;
+    if (quote == null || card == null) return;
+
+    final openTrades =
+        _paperTrades.where((t) => t.status == 'OPEN').toList();
+    final double currentOpenRisk = openTrades.length * 100.0;
+
+    if (openTrades.length >= 3 || currentOpenRisk >= 300.0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Risk Rule Blocked: Max Rs 300 open risk reached (3 open paper trades active). Square off an open trade first.'),
+        ),
+      );
+      return;
+    }
+
+    // Signal Quality Gate: 3rd open trade slot requires High confidence (unless testing via Practice button)
+    if (!forcePracticeBuy &&
+        openTrades.length == 2 &&
+        card.confidence != 'High') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Signal Quality Gate: 2 trades already open (Rs 200 risk). The 3rd slot requires a HIGH confidence signal.'),
+        ),
+      );
+      return;
+    }
+
+    final String tradeAction = forcePracticeBuy
+        ? 'BUY'
+        : ((card.action == 'BUY' || card.action == 'SELL')
+            ? card.action
+            : 'BUY');
+
+    final double entry = card.entryPrice;
+    final double slDist = (entry - card.stopLoss).abs();
+    final double safeDist = slDist > 0.02 ? slDist : math.max(0.10, entry * 0.015);
+    final double sl =
+        tradeAction == 'BUY' ? (entry - safeDist) : (entry + safeDist);
+    final double target = tradeAction == 'BUY'
+        ? (entry + safeDist * 2.2)
+        : (entry - safeDist * 2.2);
+    final int shares =
+        math.max(1, math.min((100.0 / safeDist).floor(), (10000.0 / entry).floor()));
+
+    final nowIst =
+        DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+
+    final record = PaperTradeRecord(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      symbol: stock.symbol,
+      action: tradeAction,
+      confidence: card.confidence,
+      isDelayedPractice: quote.isDelayedOver5Min || forcePracticeBuy,
+      entryPrice: entry,
+      shares: shares,
+      stopLoss: sl,
+      targetPrice: target,
+      plannedMaxLoss: 100.0,
+      entryTimeIst: DateFormat('dd MMM, hh:mm:ss a').format(nowIst),
+    );
+
+    setState(() {
+      _paperTrades.insert(0, record);
+      _bottomTabIndex = 1; // Switch directly to Results screen so user sees it logged
+    });
+    _savePaperTrades();
+  }
+
+  void _closePaperTradeManually(PaperTradeRecord trade, String outcomeType) {
+    final nowIst =
+        DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+    final timeStr = DateFormat('dd MMM, hh:mm:ss a').format(nowIst);
+
+    // Find current LTP for this stock
+    double ltp = trade.entryPrice;
+    for (final s in _stocks) {
+      if (s.symbol == trade.symbol && s.quote != null) {
+        ltp = s.quote!.price;
+        break;
+      }
+    }
+
+    setState(() {
+      if (outcomeType == 'TARGET') {
+        trade.status = 'TARGET_HIT';
+        trade.exitPrice = trade.targetPrice;
+        trade.realizedPnl =
+            (trade.targetPrice - trade.entryPrice).abs() * trade.shares;
+      } else if (outcomeType == 'SL') {
+        trade.status = 'SL_HIT';
+        trade.exitPrice = trade.stopLoss;
+        trade.realizedPnl = -100.0; // Strictly capped at Rs 100 max loss
+      } else {
+        trade.status = 'SQUARED_OFF';
+        trade.exitPrice = ltp;
+        final raw = trade.action == 'BUY'
+            ? (ltp - trade.entryPrice) * trade.shares
+            : (trade.entryPrice - ltp) * trade.shares;
+        trade.realizedPnl = math.max(-100.0, raw);
+      }
+      trade.exitTimeIst = timeStr;
+    });
+    _savePaperTrades();
+  }
+
+  Future<void> _resetPaperAccount() async {
+    setState(() {
+      _paperTrades.clear();
+    });
+    await _savePaperTrades();
   }
 
   void _reEvaluateAllCardsForLanguage(String newLang) {
@@ -1252,14 +1561,778 @@ class _Stage3ScreenState extends State<Stage3Screen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final lang = widget.language;
+  Widget _buildLiveAndSignalsTab(String lang) {
     final selectedStock = _stocks[_selectedIndex];
     final quote = selectedStock.quote;
     final card = selectedStock.actionCard;
     final timeFormatter = DateFormat('dd MMM, hh:mm:ss a');
     final googleSymbol = selectedStock.symbol.replaceAll('.NS', ':NSE');
+
+    return Column(
+      children: [
+        // 1. Market Status Banner
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          color: _isMarketOpen
+              ? Colors.green.withOpacity(0.2)
+              : Colors.orange.withOpacity(0.2),
+          child: Text(
+            _isMarketOpen
+                ? AppStrings.get(lang, 'market_open')
+                : AppStrings.get(lang, 'market_closed'),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              color: _isMarketOpen ? Colors.green : Colors.orange,
+            ),
+          ),
+        ),
+
+        // 2. 5 Starter Stocks Tabs
+        SizedBox(
+          height: 52,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            itemCount: _stocks.length,
+            itemBuilder: (context, index) {
+              final isSelected = index == _selectedIndex;
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                child: ChoiceChip(
+                  label: Text(_stocks[index].symbol.replaceAll('.NS', '')),
+                  selected: isSelected,
+                  onSelected: (_) {
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+
+        const Divider(height: 1),
+
+        // 3. Scrollable Main Area: Price + Chart + 15-Skill Action Card
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(14.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Card(
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (quote != null && quote.isDelayedOver5Min)
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade700,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '${AppStrings.get(lang, 'delayed_badge')} (${quote.delayMinutes}m)',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  selectedStock.symbol,
+                                  style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  selectedStock.name,
+                                  style: const TextStyle(
+                                      fontSize: 13, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                            if (quote != null)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    AppStrings.get(lang, 'ltp'),
+                                    style: const TextStyle(
+                                        fontSize: 11, color: Colors.grey),
+                                  ),
+                                  Text(
+                                    'Rs ${quote.price.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+                        if (quote != null) ...[
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 4,
+                            children: [
+                              Text('VWAP: Rs ${quote.vwap.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600)),
+                              Text('RSI: ${quote.rsi14.toStringAsFixed(1)}',
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600)),
+                              Text('MACD: ${quote.macdHist.toStringAsFixed(3)}',
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600)),
+                              Text(
+                                  'S/R: Rs ${quote.supportLevel.toStringAsFixed(2)} / Rs ${quote.resistanceLevel.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.blueAccent,
+                                      fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              quote != null
+                                  ? '${AppStrings.get(lang, 'candles_count')} ${quote.bars.length}'
+                                  : '',
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.grey),
+                            ),
+                            SegmentedButton<bool>(
+                              segments: [
+                                ButtonSegment(
+                                  value: false,
+                                  label: Text(
+                                      AppStrings.get(lang, 'chart_line'),
+                                      style: const TextStyle(fontSize: 12)),
+                                ),
+                                ButtonSegment(
+                                  value: true,
+                                  label: Text(
+                                      AppStrings.get(lang, 'chart_candle'),
+                                      style: const TextStyle(fontSize: 12)),
+                                ),
+                              ],
+                              selected: {_showCandlestick},
+                              onSelectionChanged: (val) {
+                                setState(() {
+                                  _showCandlestick = val.first;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        if (selectedStock.isLoading)
+                          const SizedBox(
+                            height: 180,
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        else if (selectedStock.errorMessage.isNotEmpty)
+                          SizedBox(
+                            height: 180,
+                            child: Center(
+                              child: Text(
+                                selectedStock.errorMessage,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          )
+                        else if (quote != null && quote.bars.isNotEmpty)
+                          Container(
+                            height: 180,
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: Colors.grey.withOpacity(0.3)),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: CustomPaint(
+                              painter: StockChartPainter(
+                                bars: quote.bars,
+                                isCandlestick: _showCandlestick,
+                                isDark: widget.isDarkMode,
+                              ),
+                            ),
+                          )
+                        else
+                          SizedBox(
+                            height: 180,
+                            child: Center(
+                              child: Text(AppStrings.get(lang, 'no_candles')),
+                            ),
+                          ),
+                        const SizedBox(height: 10),
+                        if (quote != null) ...[
+                          Text(
+                            '${AppStrings.get(lang, 'trade_time')}: ${timeFormatter.format(quote.tradeTimeIst)}',
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                          Text(
+                            '${AppStrings.get(lang, 'fetch_time')}: ${timeFormatter.format(quote.fetchTimeIst)}',
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                        ],
+                        const SizedBox(height: 4),
+                        Text(
+                          '${AppStrings.get(lang, 'verify_title')} google.com/finance/quote/$googleSymbol',
+                          style:
+                              const TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // 15-Skill Master Trader Agent Action Card
+                if (card != null)
+                  Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(
+                        color: _badgeColorForAction(card.action),
+                        width: 2,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  AppStrings.get(lang, 'card_header'),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: _badgeColorForAction(card.action),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '2. ACTION: ${card.action}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          // 1. Data Freshness
+                          Text(
+                            AppStrings.get(lang, 'freshness_label'),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          Text(
+                            card.dataFreshness,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  card.dataFreshness.contains('PRACTICE ONLY')
+                                      ? Colors.redAccent
+                                      : Colors.green,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // 3. Confidence + 1-line reason
+                          Text(
+                            '${AppStrings.get(lang, 'confidence_label')} ${card.confidence}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          Text(card.confidenceReason,
+                              style: const TextStyle(fontSize: 13)),
+
+                          const Divider(height: 20),
+
+                          // 4. Position Sizing & Risk Plan
+                          Text(
+                            AppStrings.get(lang, 'trade_plan_label'),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 14,
+                            runSpacing: 6,
+                            children: [
+                              Text(
+                                  '${AppStrings.get(lang, 'entry_label')}: Rs ${card.entryPrice.toStringAsFixed(2)}'),
+                              Text(
+                                  '${AppStrings.get(lang, 'shares_label')}: ${card.sharesForMaxLoss100} shares'),
+                              Text(
+                                  '${AppStrings.get(lang, 'cost_label')}: Rs ${card.estimatedCapitalUsed.toStringAsFixed(0)}'),
+                              Text(
+                                  '${AppStrings.get(lang, 'sl_label')}: Rs ${card.stopLoss.toStringAsFixed(2)}'),
+                              Text(
+                                  '${AppStrings.get(lang, 'target_label')}: Rs ${card.targetPrice.toStringAsFixed(2)}'),
+                              Text(
+                                  '${AppStrings.get(lang, 'rr_label')}: ${card.riskRewardRatio}'),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            card.squareOffNote,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange,
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Paper Trade Logging Buttons
+                          if (card.action == 'BUY' || card.action == 'SELL')
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green.shade700,
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: () => _logPaperTrade(selectedStock,
+                                    forcePracticeBuy: false),
+                                icon: const Icon(Icons.assignment_turned_in),
+                                label:
+                                    Text(AppStrings.get(lang, 'log_signal_btn')),
+                              ),
+                            )
+                          else
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () => _logPaperTrade(selectedStock,
+                                    forcePracticeBuy: true),
+                                icon: const Icon(Icons.science_outlined),
+                                label:
+                                    Text(AppStrings.get(lang, 'sim_trade_btn')),
+                              ),
+                            ),
+
+                          const Divider(height: 20),
+
+                          // 5. Why
+                          Text(
+                            AppStrings.get(lang, 'why_label'),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                              '• ${AppStrings.get(lang, 'tech_label')}: ${card.technicalWhy}',
+                              style: const TextStyle(fontSize: 13)),
+                          const SizedBox(height: 2),
+                          Text(
+                              '• ${AppStrings.get(lang, 'fund_label')}: ${card.fundamentalWhy}',
+                              style: const TextStyle(fontSize: 13)),
+                          const SizedBox(height: 2),
+                          Text(
+                              '• ${AppStrings.get(lang, 'news_label')}: ${card.newsWhy}',
+                              style: const TextStyle(fontSize: 13)),
+                          const SizedBox(height: 10),
+
+                          // 6. What would prove this wrong
+                          Text(
+                            AppStrings.get(lang, 'wrong_label'),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          Text(card.whatProvesWrong,
+                              style: const TextStyle(fontSize: 13)),
+                          const SizedBox(height: 10),
+
+                          // 7. Data gaps
+                          Text(
+                            AppStrings.get(lang, 'gaps_label'),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          Text(card.dataGaps,
+                              style: const TextStyle(fontSize: 13)),
+
+                          const SizedBox(height: 12),
+
+                          // Expandable 15-Skill Master Breakdown
+                          ExpansionTile(
+                            tilePadding: EdgeInsets.zero,
+                            title: Text(
+                              AppStrings.get(lang, 'skills_panel_title'),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blueAccent,
+                              ),
+                            ),
+                            children: card.fifteenSkillsReport.map((item) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 4.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      item.isPositive
+                                          ? Icons.check_circle_outline
+                                          : Icons.info_outline,
+                                      size: 16,
+                                      color: item.isPositive
+                                          ? Colors.green
+                                          : Colors.orange,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: RichText(
+                                        text: TextSpan(
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: widget.isDarkMode
+                                                ? Colors.white70
+                                                : Colors.black87,
+                                          ),
+                                          children: [
+                                            TextSpan(
+                                              text: '${item.title}: ',
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            TextSpan(text: item.finding),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
+
+                          const Divider(height: 16),
+                          Text(
+                            card.footerDisclaimer,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResultsTab(String lang) {
+    const double baseCapital = 10000.0;
+    final openTrades =
+        _paperTrades.where((t) => t.status == 'OPEN').toList();
+    final closedTrades =
+        _paperTrades.where((t) => t.status != 'OPEN').toList();
+
+    double realizedPnl = 0.0;
+    int wins = 0;
+    int losses = 0;
+    double sumWins = 0.0;
+    double sumLosses = 0.0;
+
+    for (final t in closedTrades) {
+      realizedPnl += t.realizedPnl;
+      if (t.realizedPnl > 0) {
+        wins++;
+        sumWins += t.realizedPnl;
+      } else if (t.realizedPnl < 0) {
+        losses++;
+        sumLosses += t.realizedPnl.abs();
+      }
+    }
+
+    double unrealizedPnl = 0.0;
+    for (final t in openTrades) {
+      double ltp = t.entryPrice;
+      for (final s in _stocks) {
+        if (s.symbol == t.symbol && s.quote != null) {
+          ltp = s.quote!.price;
+          break;
+        }
+      }
+      unrealizedPnl += t.currentUnrealizedPnl(ltp);
+    }
+
+    final double totalProfit = realizedPnl + unrealizedPnl;
+    final double totalEquity = baseCapital + totalProfit;
+    final double winRate =
+        closedTrades.isNotEmpty ? (wins / closedTrades.length) * 100.0 : 0.0;
+    final double avgWin = wins > 0 ? (sumWins / wins) : 0.0;
+    final double avgLoss = losses > 0 ? (sumLosses / losses) : 0.0;
+    final double openRisk = openTrades.length * 100.0;
+
+    return Padding(
+      padding: const EdgeInsets.all(14.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  AppStrings.get(lang, 'results_title'),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: _resetPaperAccount,
+                icon: const Icon(Icons.delete_outline, size: 18),
+                label: Text(AppStrings.get(lang, 'reset_btn'),
+                    style: const TextStyle(fontSize: 12)),
+              ),
+            ],
+          ),
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(14.0),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppStrings.get(lang, 'total_equity'),
+                          style: const TextStyle(fontSize: 13)),
+                      Text(
+                        'Rs ${totalEquity.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppStrings.get(lang, 'total_pnl'),
+                          style: const TextStyle(fontSize: 13)),
+                      Text(
+                        '${totalProfit >= 0 ? "+" : ""}Rs ${totalProfit.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: totalProfit >= 0 ? Colors.green : Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 18),
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${AppStrings.get(lang, 'win_rate')}: ${winRate.toStringAsFixed(1)}% ($wins/${closedTrades.length})',
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                      Text(
+                        '${AppStrings.get(lang, 'avg_win')}: +Rs ${avgWin.toStringAsFixed(1)}',
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.green),
+                      ),
+                      Text(
+                        '${AppStrings.get(lang, 'avg_loss')}: -Rs ${avgLoss.toStringAsFixed(1)}',
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.red),
+                      ),
+                      Text(
+                        '${AppStrings.get(lang, 'open_risk')}: Rs ${openRisk.toStringAsFixed(0)} / Rs 300',
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.orange),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: _paperTrades.isEmpty
+                ? Center(
+                    child: Text(
+                      AppStrings.get(lang, 'no_trades'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _paperTrades.length,
+                    itemBuilder: (context, index) {
+                      final t = _paperTrades[index];
+                      double ltp = t.entryPrice;
+                      for (final s in _stocks) {
+                        if (s.symbol == t.symbol && s.quote != null) {
+                          ltp = s.quote!.price;
+                          break;
+                        }
+                      }
+                      final pnl = t.status == 'OPEN'
+                          ? t.currentUnrealizedPnl(ltp)
+                          : t.realizedPnl;
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '${t.symbol} • ${t.action} (${t.shares} shares)',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14),
+                                  ),
+                                  Text(
+                                    '${pnl >= 0 ? "+" : ""}Rs ${pnl.toStringAsFixed(2)} (${t.status})',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: pnl >= 0
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (t.isDelayedPractice)
+                                const Text(
+                                  'PRACTICE ONLY - DELAYED / SIMULATED DATA',
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Entry: Rs ${t.entryPrice.toStringAsFixed(2)} | SL: Rs ${t.stopLoss.toStringAsFixed(2)} | Target: Rs ${t.targetPrice.toStringAsFixed(2)}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              Text(
+                                'Logged: ${t.entryTimeIst}${t.exitTimeIst != null ? " • Closed: ${t.exitTimeIst}" : ""}',
+                                style: const TextStyle(
+                                    fontSize: 11, color: Colors.grey),
+                              ),
+                              if (t.status == 'OPEN') ...[
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 6,
+                                  children: [
+                                    OutlinedButton(
+                                      onPressed: () =>
+                                          _closePaperTradeManually(t, 'LTP'),
+                                      child: Text(
+                                          AppStrings.get(lang, 'close_at_ltp'),
+                                          style:
+                                              const TextStyle(fontSize: 11)),
+                                    ),
+                                    OutlinedButton(
+                                      onPressed: () =>
+                                          _closePaperTradeManually(t, 'TARGET'),
+                                      child: Text(
+                                          AppStrings.get(lang, 'sim_target'),
+                                          style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.green)),
+                                    ),
+                                    OutlinedButton(
+                                      onPressed: () =>
+                                          _closePaperTradeManually(t, 'SL'),
+                                      child: Text(
+                                          AppStrings.get(lang, 'sim_sl'),
+                                          style: const TextStyle(
+                                              fontSize: 11, color: Colors.red)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = widget.language;
+    final selectedStock = _stocks[_selectedIndex];
 
     return Scaffold(
       appBar: AppBar(
@@ -1276,488 +2349,24 @@ class _Stage3ScreenState extends State<Stage3Screen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // 1. Market Status Banner
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            color: _isMarketOpen
-                ? Colors.green.withOpacity(0.2)
-                : Colors.orange.withOpacity(0.2),
-            child: Text(
-              _isMarketOpen
-                  ? AppStrings.get(lang, 'market_open')
-                  : AppStrings.get(lang, 'market_closed'),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: _isMarketOpen ? Colors.green : Colors.orange,
-              ),
-            ),
+      body: _bottomTabIndex == 0
+          ? _buildLiveAndSignalsTab(lang)
+          : _buildResultsTab(lang),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _bottomTabIndex,
+        onDestinationSelected: (idx) {
+          setState(() {
+            _bottomTabIndex = idx;
+          });
+        },
+        destinations: [
+          NavigationDestination(
+            icon: const Icon(Icons.candlestick_chart),
+            label: AppStrings.get(lang, 'nav_live'),
           ),
-
-          // 2. 5 Starter Stocks Tabs
-          SizedBox(
-            height: 52,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              itemCount: _stocks.length,
-              itemBuilder: (context, index) {
-                final isSelected = index == _selectedIndex;
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                  child: ChoiceChip(
-                    label: Text(_stocks[index].symbol.replaceAll('.NS', '')),
-                    selected: isSelected,
-                    onSelected: (_) {
-                      setState(() {
-                        _selectedIndex = index;
-                      });
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const Divider(height: 1),
-
-          // 3. Scrollable Main Area: Price + Chart + 15-Skill Action Card
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(14.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (quote != null && quote.isDelayedOver5Min)
-                            Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 10),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade700,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${AppStrings.get(lang, 'delayed_badge')} (${quote.delayMinutes}m)',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    selectedStock.symbol,
-                                    style: const TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    selectedStock.name,
-                                    style: const TextStyle(
-                                        fontSize: 13, color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                              if (quote != null)
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      AppStrings.get(lang, 'ltp'),
-                                      style: const TextStyle(
-                                          fontSize: 11, color: Colors.grey),
-                                    ),
-                                    Text(
-                                      'Rs ${quote.price.toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                            ],
-                          ),
-                          if (quote != null) ...[
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 10,
-                              runSpacing: 4,
-                              children: [
-                                Text(
-                                    'VWAP: Rs ${quote.vwap.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600)),
-                                Text('RSI: ${quote.rsi14.toStringAsFixed(1)}',
-                                    style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600)),
-                                Text(
-                                    'MACD: ${quote.macdHist.toStringAsFixed(3)}',
-                                    style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600)),
-                                Text(
-                                    'S/R: Rs ${quote.supportLevel.toStringAsFixed(2)} / Rs ${quote.resistanceLevel.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.blueAccent,
-                                        fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ],
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                quote != null
-                                    ? '${AppStrings.get(lang, 'candles_count')} ${quote.bars.length}'
-                                    : '',
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.grey),
-                              ),
-                              SegmentedButton<bool>(
-                                segments: [
-                                  ButtonSegment(
-                                    value: false,
-                                    label: Text(
-                                        AppStrings.get(lang, 'chart_line'),
-                                        style: const TextStyle(fontSize: 12)),
-                                  ),
-                                  ButtonSegment(
-                                    value: true,
-                                    label: Text(
-                                        AppStrings.get(lang, 'chart_candle'),
-                                        style: const TextStyle(fontSize: 12)),
-                                  ),
-                                ],
-                                selected: {_showCandlestick},
-                                onSelectionChanged: (val) {
-                                  setState(() {
-                                    _showCandlestick = val.first;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          if (selectedStock.isLoading)
-                            const SizedBox(
-                              height: 185,
-                              child: Center(child: CircularProgressIndicator()),
-                            )
-                          else if (selectedStock.errorMessage.isNotEmpty)
-                            SizedBox(
-                              height: 185,
-                              child: Center(
-                                child: Text(
-                                  selectedStock.errorMessage,
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            )
-                          else if (quote != null && quote.bars.isNotEmpty)
-                            Container(
-                              height: 185,
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Colors.grey.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: CustomPaint(
-                                painter: StockChartPainter(
-                                  bars: quote.bars,
-                                  isCandlestick: _showCandlestick,
-                                  isDark: widget.isDarkMode,
-                                ),
-                              ),
-                            )
-                          else
-                            SizedBox(
-                              height: 185,
-                              child: Center(
-                                child: Text(AppStrings.get(lang, 'no_candles')),
-                              ),
-                            ),
-                          const SizedBox(height: 10),
-                          if (quote != null) ...[
-                            Text(
-                              '${AppStrings.get(lang, 'trade_time')}: ${timeFormatter.format(quote.tradeTimeIst)}',
-                              style: const TextStyle(fontSize: 11),
-                            ),
-                            Text(
-                              '${AppStrings.get(lang, 'fetch_time')}: ${timeFormatter.format(quote.fetchTimeIst)}',
-                              style: const TextStyle(fontSize: 11),
-                            ),
-                          ],
-                          const SizedBox(height: 4),
-                          Text(
-                            '${AppStrings.get(lang, 'verify_title')} google.com/finance/quote/$googleSymbol',
-                            style: const TextStyle(
-                                fontSize: 11, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // 15-Skill Master Trader Agent Action Card
-                  if (card != null)
-                    Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                          color: _badgeColorForAction(card.action),
-                          width: 2,
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    AppStrings.get(lang, 'card_header'),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: _badgeColorForAction(card.action),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    '2. ACTION: ${card.action}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-
-                            // 1. Data Freshness
-                            Text(
-                              AppStrings.get(lang, 'freshness_label'),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                            Text(
-                              card.dataFreshness,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: card.dataFreshness
-                                        .contains('PRACTICE ONLY')
-                                    ? Colors.redAccent
-                                    : Colors.green,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-
-                            // 3. Confidence + 1-line reason
-                            Text(
-                              '${AppStrings.get(lang, 'confidence_label')} ${card.confidence}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                            Text(card.confidenceReason,
-                                style: const TextStyle(fontSize: 13)),
-
-                            const Divider(height: 20),
-
-                            // 4. Position Sizing & Risk Plan (Always visible or highlighted for BUY/SELL)
-                            if (card.action == 'BUY' ||
-                                card.action == 'SELL') ...[
-                              Text(
-                                AppStrings.get(lang, 'trade_plan_label'),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 13),
-                              ),
-                              const SizedBox(height: 6),
-                              Wrap(
-                                spacing: 14,
-                                runSpacing: 6,
-                                children: [
-                                  Text(
-                                      '${AppStrings.get(lang, 'entry_label')}: Rs ${card.entryPrice.toStringAsFixed(2)}'),
-                                  Text(
-                                      '${AppStrings.get(lang, 'shares_label')}: ${card.sharesForMaxLoss100} shares'),
-                                  Text(
-                                      '${AppStrings.get(lang, 'cost_label')}: Rs ${card.estimatedCapitalUsed.toStringAsFixed(0)}'),
-                                  Text(
-                                      '${AppStrings.get(lang, 'sl_label')}: Rs ${card.stopLoss.toStringAsFixed(2)}'),
-                                  Text(
-                                      '${AppStrings.get(lang, 'target_label')}: Rs ${card.targetPrice.toStringAsFixed(2)}'),
-                                  Text(
-                                      '${AppStrings.get(lang, 'rr_label')}: ${card.riskRewardRatio}'),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                card.squareOffNote,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.orange,
-                                ),
-                              ),
-                              const Divider(height: 20),
-                            ],
-
-                            // 5. Why (1 line each: Technical, Fundamental, News)
-                            Text(
-                              AppStrings.get(lang, 'why_label'),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                                '• ${AppStrings.get(lang, 'tech_label')}: ${card.technicalWhy}',
-                                style: const TextStyle(fontSize: 13)),
-                            const SizedBox(height: 2),
-                            Text(
-                                '• ${AppStrings.get(lang, 'fund_label')}: ${card.fundamentalWhy}',
-                                style: const TextStyle(fontSize: 13)),
-                            const SizedBox(height: 2),
-                            Text(
-                                '• ${AppStrings.get(lang, 'news_label')}: ${card.newsWhy}',
-                                style: const TextStyle(fontSize: 13)),
-                            const SizedBox(height: 10),
-
-                            // 6. What would prove this wrong
-                            Text(
-                              AppStrings.get(lang, 'wrong_label'),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                            Text(card.whatProvesWrong,
-                                style: const TextStyle(fontSize: 13)),
-                            const SizedBox(height: 10),
-
-                            // 7. Data gaps
-                            Text(
-                              AppStrings.get(lang, 'gaps_label'),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                            Text(card.dataGaps,
-                                style: const TextStyle(fontSize: 13)),
-
-                            const SizedBox(height: 12),
-
-                            // Expandable 15-Skill Master Breakdown
-                            ExpansionTile(
-                              tilePadding: EdgeInsets.zero,
-                              title: Text(
-                                AppStrings.get(lang, 'skills_panel_title'),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blueAccent,
-                                ),
-                              ),
-                              children: card.fifteenSkillsReport.map((item) {
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4.0),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Icon(
-                                        item.isPositive
-                                            ? Icons.check_circle_outline
-                                            : Icons.info_outline,
-                                        size: 16,
-                                        color: item.isPositive
-                                            ? Colors.green
-                                            : Colors.orange,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: RichText(
-                                          text: TextSpan(
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: widget.isDarkMode
-                                                  ? Colors.white70
-                                                  : Colors.black87,
-                                            ),
-                                            children: [
-                                              TextSpan(
-                                                text: '${item.title}: ',
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              TextSpan(text: item.finding),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-
-                            const Divider(height: 16),
-                            Text(
-                              card.footerDisclaimer,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontStyle: FontStyle.italic,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+          NavigationDestination(
+            icon: const Icon(Icons.assessment_outlined),
+            label: AppStrings.get(lang, 'nav_results'),
           ),
         ],
       ),
