@@ -22,27 +22,21 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
   bool _isDarkMode = true;
   String _language = 'EN';
   String _geminiApiKey = '';
-  double _paperBalance = 10000.0;
-  List> _paperTrades = [];
+  String _customAnalystPrompt = '';
 
   @override
   void initState() {
     super.initState();
-    _loadSettingsAndTrades();
+    _loadSettings();
   }
 
-  Future<void> _loadSettingsAndTrades() async {
+  Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _isDarkMode = prefs.getBool('dark_mode') ?? true;
       _language = prefs.getString('app_lang') ?? 'EN';
       _geminiApiKey = prefs.getString('gemini_api_key') ?? '';
-      _paperBalance = prefs.getDouble('paper_balance') ?? 10000.0;
-      
-      final savedTrades = prefs.getString('paper_trades');
-      if (savedTrades != null) {
-        _paperTrades = List>.from(jsonDecode(savedTrades));
-      }
+      _customAnalystPrompt = prefs.getString('custom_analyst_prompt') ?? '';
     });
   }
 
@@ -62,39 +56,20 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
     });
   }
 
-  Future<void> _updateApiKey(String key) async {
+  Future<void> _saveSecrets(String apiKey, String customPrompt) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('gemini_api_key', key);
+    await prefs.setString('gemini_api_key', apiKey.trim());
+    await prefs.setString('custom_analyst_prompt', customPrompt.trim());
     setState(() {
-      _geminiApiKey = key;
+      _geminiApiKey = apiKey.trim();
+      _customAnalystPrompt = customPrompt.trim();
     });
-  }
-
-  Future<void> _addPaperTrade(Map<String, dynamic> trade) async {
-    setState(() {
-      _paperTrades.insert(0, trade);
-      if (_paperTrades.length > 50) {
-        _paperTrades.removeLast();
-      }
-    });
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('paper_trades', jsonEncode(_paperTrades));
-  }
-
-  Future<void> _resetPaperAccount() async {
-    setState(() {
-      _paperBalance = 10000.0;
-      _paperTrades.clear();
-    });
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('paper_balance', 10000.0);
-    await prefs.remove('paper_trades');
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Penny Trader - Stage 4',
+      title: 'Penny Stock Trader',
       debugShowCheckedModeBanner: false,
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
       theme: ThemeData(
@@ -107,29 +82,27 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
         colorSchemeSeed: Colors.blue,
         useMaterial3: true,
       ),
-      home: Stage4Screen(
+      home: Stage3Screen(
         isDarkMode: _isDarkMode,
         language: _language,
         geminiApiKey: _geminiApiKey,
-        paperBalance: _paperBalance,
-        paperTrades: _paperTrades,
+        customAnalystPrompt: _customAnalystPrompt,
         onThemeChanged: _updateTheme,
         onLanguageChanged: _updateLanguage,
-        onApiKeyChanged: _updateApiKey,
-        onAddTrade: _addPaperTrade,
-        onResetAccount: _resetPaperAccount,
+        onSecretsSaved: _saveSecrets,
       ),
     );
   }
 }
 
+// Bilingual UI Dictionary (English & Telugu)
 class AppStrings {
   static String get(String lang, String key) {
     const Map<String, Map<String, String>> dict = {
       'EN': {
-        'app_title': 'Penny Trader - Stage 4 (Results Log)',
+        'app_title': 'Penny Trader - Stage 3',
         'market_open': 'NSE Market OPEN (9:15-3:30 IST) • 10s Live Update',
-        'market_closed': 'Market CLOSED • Showing Last Session Data',
+        'market_closed': 'Market CLOSED • Showing Last Session Snapshot',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
         'ltp': 'Last Traded Price (NSE)',
         'trade_time': 'Exchange Trade Time (IST)',
@@ -137,67 +110,85 @@ class AppStrings {
         'chart_line': 'Line Graph',
         'chart_candle': 'Candlestick',
         'no_candles': 'No intraday candles available',
-        'settings': 'Settings & AI Key',
+        'settings': 'Settings & Local Phone Secrets',
         'theme_title': 'Dark Theme',
         'theme_sub': 'Switch between Dark and Light screen mode',
         'lang_title': 'App & AI Language',
         'lang_sub': 'Choose English or Telugu (తెలుగు)',
-        'key_title': 'Gemini API Key (Google AI Studio)',
-        'key_sub': 'Type or paste your free key here securely',
-        'key_hint': 'AI Studio API Key',
-        'close': 'Close',
+        'key_label': 'Gemini API Key (Saved only on this phone)',
+        'key_hint': 'Paste your Google AI Studio key here',
+        'prompt_label': 'Private Analyst Prompt (Optional Override)',
+        'prompt_hint': 'Leave blank for built-in rules, or paste your custom role prompt',
+        'save_close': 'Save & Close',
         'verify_title': 'Same-Minute Google Finance Test:',
-        'candles_count': '5-Min Intraday Bars Shown:',
-        'get_ai_signal': 'Generate AI Intraday Signal',
-        'analyzing': 'AI Analyst is evaluating technicals & risk...',
-        'enter_key_prompt': 'Please enter your Gemini API Key in Settings.',
-        'log_paper_trade': 'Log as Virtual Paper Trade',
-        'results_tab': 'Results Log & Stats',
-        'virtual_balance': 'Virtual Capital (Base Rs 10,000):',
-        'win_rate': 'Win Rate:',
-        'total_profit': 'Total Paper Profit/Loss:',
-        'avg_win_loss': 'Avg Win / Loss:',
-        'open_trades': 'Open Risk (Max Rs 300 across trades):',
-        'reset_account': 'Reset Paper Account',
-        'no_trades': 'No paper trades logged yet. Generate signals and log trades!',
+        'candles_count': '5-Min Bars:',
+        'run_analyst': 'Analyze Stock (AI Action Card)',
+        'analyzing': 'Evaluating <data> tags, VWAP, RSI & Penny Rules...',
+        'missing_key': 'Tap Settings (gear icon) and save your Gemini API Key first.',
+        'rate_limit': 'HTTP 429: Free AI quota paused — please wait 60 seconds and retry.',
+        'card_header': 'AI INTRADAY ACTION CARD',
+        'freshness_label': '1. Data Freshness:',
+        'confidence_label': '3. Confidence:',
+        'trade_plan_label': '4. Position & Risk Plan (Max Loss Rs 100):',
+        'entry_label': 'Entry Price',
+        'shares_label': 'Max Shares',
+        'sl_label': 'Stop-Loss',
+        'target_label': 'Target (Min 1:2)',
+        'rr_label': 'Risk : Reward',
+        'why_label': '5. Why (1 Line Each):',
+        'tech_label': 'Technical',
+        'fund_label': 'Fundamental',
+        'news_label': 'News',
+        'wrong_label': '6. What Would Prove This Wrong:',
+        'gaps_label': '7. Data Gaps:',
+        'disclaimer': 'Educational analysis, not financial advice. Paper trading only.',
       },
       'TE': {
-        'app_title': 'పెన్నీ ట్రేడర్ - దశ 4 (ఫలితాల లాగ్)',
+        'app_title': 'పెన్నీ ట్రేడర్ - దశ 3',
         'market_open': 'NSE మార్కెట్ తెరిచి ఉంది (9:15-3:30 IST) • 10s లైవ్',
         'market_closed': 'మార్కెట్ మూసివేయబడింది • చివరి సెషన్ డేటా',
-        'delayed_badge': 'PRACTICE ONLY - DELAYED DATA (ఆలస్యమైన డేటా)',
+        'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
         'ltp': 'చివరి ట్రేడ్ ధర (NSE)',
         'trade_time': 'ఎక్స్ఛేంజ్ ట్రేడ్ సమయం (IST)',
         'fetch_time': 'ఫోన్ సేకరించిన సమయం (IST)',
         'chart_line': 'లైన్ గ్రాఫ్',
         'chart_candle': 'కాండిల్ స్టిక్',
         'no_candles': 'ఇంట్రాడే కాండిల్ డేటా అందుబాటులో లేదు',
-        'settings': 'సెట్టింగ్‌లు & AI కీ',
+        'settings': 'సెట్టింగ్‌లు & ఫోన్ సీక్రెట్స్',
         'theme_title': 'డార్క్ థీమ్ (Dark Theme)',
         'theme_sub': 'డార్క్ లేదా లైట్ స్క్రీన్ మోడ్ మార్చండి',
         'lang_title': 'భాష (Language)',
         'lang_sub': 'ఇంగ్లీష్ లేదా తెలుగు ఎంచుకోండి',
-        'key_title': 'Gemini API కీ',
-        'key_sub': 'మీ ఉచిత కీని ఇక్కడ నమోదు చేయండి',
-        'key_hint': 'AI స్టూడియో API కీ',
-        'close': 'మూసివేయి',
+        'key_label': 'Gemini API కీ (మీ ఫోన్‌లో మాత్రమే సేవ్ చేయబడుతుంది)',
+        'key_hint': 'మీ Google AI Studio కీని ఇక్కడ పేస్ట్ చేయండి',
+        'prompt_label': 'ప్రైవేట్ అనలిస్ట్ ప్రాంప్ట్ (ఐచ్ఛికం)',
+        'prompt_hint': 'ఖాళీగా ఉంచండి లేదా మీ ప్రాంప్ట్‌ను పేస్ట్ చేయండి',
+        'save_close': 'సేవ్ చేసి మూసివేయి',
         'verify_title': 'గూగుల్ ఫైనాన్స్ ధర తనిఖీ:',
         'candles_count': '5-నిమిషాల కాండిల్స్:',
-        'get_ai_signal': 'AI సిగ్నల్ సృష్టించండి',
-        'analyzing': 'AI విశ్లేషిస్తోంది...',
-        'enter_key_prompt': 'దయచేసి సెట్టింగ్స్‌లో మీ API కీని నమోదు చేయండి.',
-        'log_paper_trade': 'పేపర్ ట్రేడ్‌గా లాగ్ చేయండి',
-        'results_tab': 'ఫలితాలు & గణాంకాలు',
-        'virtual_balance': 'వర్చువల్ బ్యాలెన్స్ (రూ. 10,000):',
-        'win_rate': 'గెలుపు రేటు (Win Rate):',
-        'total_profit': 'మొత్తం లాభం/నష్టం:',
-        'avg_win_loss': 'సగటు లాభం/నష్టం:',
-        'open_trades': 'ఓపెన్ రిస్క్ (గరిష్టంగా ರೂ. 300):',
-        'reset_account': 'అకౌంట్ రీసెట్ చేయి',
-        'no_trades': 'పేపర్ ట్రేడ్స్ ఇంకా నమోదు కాలేదు.',
+        'run_analyst': 'AI యాక్షన్ కార్డ్ రూపొందించండి',
+        'analyzing': '<data> ట్యాగ్‌లు, VWAP, RSI మరియు పెన్నీ నియమాలను విశ్లేషిస్తోంది...',
+        'missing_key': 'దయచేసి ముందుగా సెట్టింగ్‌లలో (Gear Icon) మీ Gemini API కీని సేవ్ చేయండి.',
+        'rate_limit': 'HTTP 429: ఉచిత AI పరిమితి చేరుకుంది — 60 సెకన్లు ఆగి మళ్లీ ప్రయత్నించండి.',
+        'card_header': 'AI ఇంట్రాడే యాక్షన్ కార్డ్',
+        'freshness_label': '1. డేటా తాజాదనం (Data Freshness):',
+        'confidence_label': '3. నమ్మకం స్థాయి (Confidence):',
+        'trade_plan_label': '4. ట్రేడ్ ప్లాన్ (గరిష్ట నష్టం Rs 100):',
+        'entry_label': 'ఎంట్రీ ధర',
+        'shares_label': 'షేర్ల సంఖ్య',
+        'sl_label': 'స్టాప్-లాస్ (SL)',
+        'target_label': 'టార్గెట్ (కనీసం 1:2)',
+        'rr_label': 'రిస్క్ : రివార్డ్',
+        'why_label': '5. కారణాలు (Why):',
+        'tech_label': 'టెక్నికల్',
+        'fund_label': 'ఫండమెంటల్',
+        'news_label': 'వార్తలు (News)',
+        'wrong_label': '6. ఇది తప్పు అని ఏది నిరూపిస్తుంది:',
+        'gaps_label': '7. డేటా లోపాలు (Data Gaps):',
+        'disclaimer': 'Educational analysis, not financial advice. Paper trading only.',
       },
     };
-    return dict[lang]?[key] ?? dict['EN']![key]![key]!;
+    return dict[lang]?[key] ?? dict['EN']![key]!;
   }
 }
 
@@ -219,59 +210,72 @@ class OhlcvBar {
   });
 }
 
-class AiSignalCard {
-  final String action;
-  final String confidence;
-  final String reasonLine;
-  final String entryPrice;
-  final String shares;
-  final String stopLoss;
-  final String target;
+// Structured 7-Point Action Card Model matching your exact analyst specification
+class ActionCardData {
+  final String dataFreshness;
+  final String action; // Strictly BUY, SELL, WAIT, or AVOID
+  final String confidence; // Low, Medium, High
+  final String confidenceReason;
+  final double entryPrice;
+  final int sharesForMaxLoss100;
+  final double stopLoss;
+  final double targetPrice;
+  final String riskRewardRatio;
   final String squareOffNote;
-  final String techReason;
-  final String fundReason;
-  final String newsReason;
-  final String invalidation;
+  final String technicalWhy;
+  final String fundamentalWhy;
+  final String newsWhy;
+  final String whatProvesWrong;
   final String dataGaps;
+  final String footerDisclaimer;
 
-  AiSignalCard({
+  ActionCardData({
+    required this.dataFreshness,
     required this.action,
     required this.confidence,
-    required this.reasonLine,
+    required this.confidenceReason,
     required this.entryPrice,
-    required this.shares,
+    required this.sharesForMaxLoss100,
     required this.stopLoss,
-    required this.target,
+    required this.targetPrice,
+    required this.riskRewardRatio,
     required this.squareOffNote,
-    required this.techReason,
-    required this.fundReason,
-    required this.newsReason,
-    required this.invalidation,
+    required this.technicalWhy,
+    required this.fundamentalWhy,
+    required this.newsWhy,
+    required this.whatProvesWrong,
     required this.dataGaps,
+    required this.footerDisclaimer,
   });
 }
 
 class StockQuote {
   final double price;
+  final double previousClose;
+  final double dayHigh;
+  final double dayLow;
+  final int totalDayVolume;
+  final double vwap;
+  final double rsi14;
   final DateTime tradeTimeIst;
   final DateTime fetchTimeIst;
   final int delayMinutes;
   final bool isDelayedOver5Min;
   final List<OhlcvBar> bars;
-  AiSignalCard? signalCard;
-  bool isAiLoading;
-  String aiError;
 
   StockQuote({
     required this.price,
+    required this.previousClose,
+    required this.dayHigh,
+    required this.dayLow,
+    required this.totalDayVolume,
+    required this.vwap,
+    required this.rsi14,
     required this.tradeTimeIst,
     required this.fetchTimeIst,
     required this.delayMinutes,
     required this.isDelayedOver5Min,
     required this.bars,
-    this.signalCard,
-    this.isAiLoading = false,
-    this.aiError = '',
   });
 }
 
@@ -305,6 +309,9 @@ class YahooDataProvider implements MarketDataProvider {
     final meta = result['meta'];
 
     final double currentPrice = (meta['regularMarketPrice'] ?? 0.0).toDouble();
+    final double prevClose =
+        (meta['chartPreviousClose'] ?? meta['previousClose'] ?? currentPrice)
+            .toDouble();
     final int timestampSec = meta['regularMarketTime'] ??
         (DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
@@ -320,6 +327,11 @@ class YahooDataProvider implements MarketDataProvider {
     final List<dynamic>? timestamps = result['timestamp'];
     final indicators = result['indicators']?['quote']?[0];
 
+    double dayHigh = currentPrice;
+    double dayLow = currentPrice;
+    int totalVol = 0;
+    double cumulativeTypicalPriceVolume = 0.0;
+
     if (timestamps != null && indicators != null) {
       final List<dynamic>? opens = indicators['open'];
       final List<dynamic>? highs = indicators['high'];
@@ -333,6 +345,18 @@ class YahooDataProvider implements MarketDataProvider {
         final l = lows?[i];
         final c = closes?[i];
         if (o != null && h != null && l != null && c != null) {
+          final double openVal = (o as num).toDouble();
+          final double highVal = (h as num).toDouble();
+          final double lowVal = (l as num).toDouble();
+          final double closeVal = (c as num).toDouble();
+          final int volVal = (volumes?[i] as num?)?.toInt() ?? 0;
+
+          if (parsedBars.isEmpty || highVal > dayHigh) dayHigh = highVal;
+          if (parsedBars.isEmpty || lowVal < dayLow) dayLow = lowVal;
+          totalVol += volVal;
+          final typicalPrice = (highVal + lowVal + closeVal) / 3.0;
+          cumulativeTypicalPriceVolume += typicalPrice * volVal;
+
           final barTime = DateTime.fromMillisecondsSinceEpoch(
                   (timestamps[i] as int) * 1000,
                   isUtc: true)
@@ -340,16 +364,21 @@ class YahooDataProvider implements MarketDataProvider {
           parsedBars.add(
             OhlcvBar(
               timeIst: barTime,
-              open: (o as num).toDouble(),
-              high: (h as num).toDouble(),
-              low: (l as num).toDouble(),
-              close: (c as num).toDouble(),
-              volume: (volumes?[i] as num?)?.toInt() ?? 0,
+              open: openVal,
+              high: highVal,
+              low: lowVal,
+              close: closeVal,
+              volume: volVal,
             ),
           );
         }
       }
     }
+
+    final double vwap = totalVol > 0
+        ? (cumulativeTypicalPriceVolume / totalVol)
+        : currentPrice;
+    final double rsi14 = _calculateRsi14(parsedBars);
 
     final recentBars = parsedBars.length > 40
         ? parsedBars.sublist(parsedBars.length - 40)
@@ -357,6 +386,12 @@ class YahooDataProvider implements MarketDataProvider {
 
     return StockQuote(
       price: currentPrice,
+      previousClose: prevClose,
+      dayHigh: dayHigh,
+      dayLow: dayLow,
+      totalDayVolume: totalVol,
+      vwap: vwap,
+      rsi14: rsi14,
       tradeTimeIst: tradeTimeIst,
       fetchTimeIst: nowIst,
       delayMinutes: diffMinutes < 0 ? 0 : diffMinutes,
@@ -364,55 +399,72 @@ class YahooDataProvider implements MarketDataProvider {
       bars: recentBars,
     );
   }
+
+  double _calculateRsi14(List<OhlcvBar> bars) {
+    if (bars.length < 15) return 50.0;
+    double gains = 0.0;
+    double losses = 0.0;
+    for (int i = bars.length - 14; i < bars.length; i++) {
+      final diff = bars[i].close - bars[i - 1].close;
+      if (diff >= 0) {
+        gains += diff;
+      } else {
+        losses -= diff;
+      }
+    }
+    if (losses == 0) return 100.0;
+    final rs = (gains / 14.0) / (losses / 14.0);
+    return 100.0 - (100.0 / (1.0 + rs));
+  }
 }
 
 class StockItem {
   final String symbol;
   final String name;
   StockQuote? quote;
+  ActionCardData? actionCard;
   bool isLoading;
+  bool isAiLoading;
   String errorMessage;
+  String aiErrorMessage;
 
   StockItem({
     required this.symbol,
     required this.name,
     this.quote,
+    this.actionCard,
     this.isLoading = true,
+    this.isAiLoading = false,
     this.errorMessage = '',
+    this.aiErrorMessage = '',
   });
 }
 
-class Stage4Screen extends StatefulWidget {
+class Stage3Screen extends StatefulWidget {
   final bool isDarkMode;
   final String language;
   final String geminiApiKey;
-  final double paperBalance;
-  final List> paperTrades;
+  final String customAnalystPrompt;
   final ValueChanged<bool> onThemeChanged;
   final ValueChanged<String> onLanguageChanged;
-  final ValueChanged<String> onApiKeyChanged;
-  final ValueChanged> onAddTrade;
-  final VoidCallback onResetAccount;
+  final Future<void> Function(String apiKey, String customPrompt) onSecretsSaved;
 
-  const Stage4Screen({
+  const Stage3Screen({
     super.key,
     required this.isDarkMode,
     required this.language,
     required this.geminiApiKey,
-    required this.paperBalance,
-    required this.paperTrades,
+    required this.customAnalystPrompt,
     required this.onThemeChanged,
     required this.onLanguageChanged,
-    required this.onApiKeyChanged,
-    required this.onAddTrade,
-    required this.onResetAccount,
+    required this.onSecretsSaved,
   });
 
   @override
-  State<Stage4Screen> createState() => _Stage4ScreenState();
+  State<Stage3Screen> createState() => _Stage3ScreenState();
 }
 
-class _Stage4ScreenState extends State<Stage4Screen> {
+class _Stage3ScreenState extends State<Stage3Screen> {
   final MarketDataProvider _dataProvider = YahooDataProvider();
 
   final List<StockItem> _stocks = [
@@ -424,7 +476,6 @@ class _Stage4ScreenState extends State<Stage4Screen> {
   ];
 
   int _selectedIndex = 0;
-  int _bottomNavIndex = 0; // 0 = Trade & AI, 1 = Results Log & Stats
   bool _isMarketOpen = false;
   bool _showCandlestick = true;
   Timer? _activeStockTimer;
@@ -503,245 +554,338 @@ class _Stage4ScreenState extends State<Stage4Screen> {
     }
   }
 
-  Future<void> _generateAiSignal(StockItem stock) async {
+  // Builds the strict <data> XML block for your Intraday Analyst Agent
+  String _buildDataXmlTag(StockItem stock, StockQuote quote) {
+    final recent5 = quote.bars.length > 5
+        ? quote.bars.sublist(quote.bars.length - 5)
+        : quote.bars;
+    final candlesText = recent5
+        .map((b) =>
+            '${DateFormat("HH:mm").format(b.timeIst)}: O=${b.open.toStringAsFixed(2)} H=${b.high.toStringAsFixed(2)} L=${b.low.toStringAsFixed(2)} C=${b.close.toStringAsFixed(2)} V=${b.volume}')
+        .join(' | ');
+
+    final changePct = quote.previousClose > 0
+        ? (((quote.price - quote.previousClose) / quote.previousClose) * 100)
+            .toStringAsFixed(2)
+        : '0.00';
+
+    return '''
+<data>
+  symbol: ${stock.symbol} (${stock.name})
+  exchange_segment: NSE EQ (User must verify ASM/GSM surveillance status on nseindia.com)
+  current_price_inr: ${quote.price.toStringAsFixed(2)}
+  previous_close_inr: ${quote.previousClose.toStringAsFixed(2)}
+  day_change_percent: $changePct%
+  day_high_inr: ${quote.dayHigh.toStringAsFixed(2)}
+  day_low_inr: ${quote.dayLow.toStringAsFixed(2)}
+  intraday_total_volume: ${quote.totalDayVolume} shares
+  min_safe_volume_rule: 500000 shares/day
+  indicators:
+    vwap_inr: ${quote.vwap.toStringAsFixed(2)}
+    rsi_14_5m: ${quote.rsi14.toStringAsFixed(1)}
+    last_5_candles_5m: $candlesText
+  fundamentals: MISSING (Yahoo free chart feed does not include P/E, debt, or quarterly earnings)
+  news: MISSING (Yahoo free chart feed does not include verified live NSE corporate announcements)
+  trade_timestamp_ist: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(quote.tradeTimeIst)} IST
+  phone_fetch_timestamp_ist: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(quote.fetchTimeIst)} IST
+  data_age_minutes: ${quote.delayMinutes}
+  is_older_than_5_minutes: ${quote.isDelayedOver5Min}
+</data>''';
+  }
+
+  Future<void> _runIntradayAnalyst(StockItem stock) async {
     final quote = stock.quote;
     if (quote == null) return;
 
     if (widget.geminiApiKey.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(AppStrings.get(widget.language, 'enter_key_prompt'))),
+          content: Text(AppStrings.get(widget.language, 'missing_key')),
+        ),
       );
+      _openSettingsSheet();
       return;
     }
 
     setState(() {
-      quote.isAiLoading = true;
-      quote.aiError = '';
+      stock.isAiLoading = true;
+      stock.aiErrorMessage = '';
     });
 
-    try {
-      final barsSummary = quote.bars
-          .map((b) =>
-              "O:${b.open} H:${b.high} L:${b.low} C:${b.close} Vol:${b.volume}")
-          .join("\n");
+    final langName =
+        widget.language == 'TE' ? 'Telugu (తెలుగు script)' : 'English';
+    final dataXml = _buildDataXmlTag(stock, quote);
 
-      final prompt = """
-You are a disciplined intraday analyst for Indian penny stocks (NSE/BSE).
-LANGUAGE: ${widget.language == 'TE' ? 'Telugu (తెలుగు script where natural, keep symbols, numbers, and BUY/SELL/WAIT/AVOID in English)' : 'English'}.
-INPUT DATA:
-Symbol: ${stock.symbol} (${stock.name})
-Price: Rs ${quote.price}
-Delay minutes: ${quote.delayMinutes}
-Recent OHLCV Bars:
-$barsSummary
+    // Uses your custom prompt from phone storage if provided, plus enforces strict JSON keys
+    final roleRules = widget.customAnalystPrompt.isNotEmpty
+        ? widget.customAnalystPrompt
+        : '''
+ROLE: Disciplined intraday analyst for Indian penny stocks (NSE/BSE).
+Use ONLY the data inside <data> tags; if something is missing, say so.
+PENNY STOCK RULES:
+- Low volume (<5,00,000 daily shares) or wide spread: AVOID.
+- Near a price limit, under exchange surveillance, or in a segment without intraday trading: AVOID.
+- Sudden spike with no news: flag possible manipulation; do not chase.
+- Default to WAIT or AVOID unless technicals, fundamentals AND news agree.
+- Max loss per trade is strictly Rs 100. Target must be minimum 1:2 risk-reward, else AVOID.
+- Never claim certainty.''';
 
-RULES:
-- Max loss Rs 100 per trade.
-- Minimum 1:2 risk-reward or AVOID.
-- Return ONLY valid JSON format with these exact keys:
+    final fullPrompt = '''
+$roleRules
+
+LANGUAGE = $langName.
+Reply in $langName (use Telugu script if Telugu), but keep stock symbols, numbers, and the exact action word (BUY / SELL / WAIT / AVOID) in English.
+
+INPUT:
+$dataXml
+
+Respond ONLY with a valid JSON object matching these exact keys:
 {
-  "action": "BUY" or "SELL" or "WAIT" or "AVOID",
-  "confidence": "Low" or "Medium" or "High",
-  "reason_line": "one line summary",
-  "entry_price": "Rs X.XX",
-  "shares": "X shares (for Rs 100 max loss)",
-  "stop_loss": "Rs X.XX",
-  "target": "Rs X.XX",
-  "square_off": "square off before 3:25 PM IST",
-  "tech": "technical reason",
-  "fund": "fundamental reason",
-  "news": "news reason",
-  "invalidation": "what proves this wrong",
-  "data_gaps": "any missing data"
-}
-""";
+  "data_freshness": "If is_older_than_5_minutes is true, MUST start with 'PRACTICE ONLY - DELAYED DATA' and treat signal as practice, otherwise state LIVE DATA",
+  "action": "BUY or SELL or WAIT or AVOID",
+  "confidence": "Low or Medium or High",
+  "confidence_reason": "One plain sentence reason in $langName",
+  "entry_price": ${quote.price.toStringAsFixed(2)},
+  "stop_loss": 0.0,
+  "target_price": 0.0,
+  "technical_why": "One plain line on price vs VWAP, RSI, and volume in $langName",
+  "fundamental_why": "One plain line (explicitly state if missing in <data>) in $langName",
+  "news_why": "One plain line (explicitly state if missing in <data>) in $langName",
+  "what_proves_wrong": "One plain line on what price or volume action invalidates this view in $langName",
+  "data_gaps": "List every missing item from <data> (e.g. fundamentals, live news, order book spread, ASM/GSM list) in $langName"
+}''';
 
+    try {
       final url = Uri.parse(
           'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${widget.geminiApiKey}');
 
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "contents": [
-            {
-              "parts": [
-                {"text": prompt}
-              ]
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'contents': [
+                {
+                  'parts': [
+                    {'text': fullPrompt}
+                  ]
+                }
+              ],
+              'generationConfig': {
+                'temperature': 0.1,
+                'responseMimeType': 'application/json',
+              }
+            }),
+          )
+          .timeout(const Duration(seconds: 25));
+
+      if (!mounted) return;
+
+      if (response.statusCode == 429) {
+        setState(() {
+          stock.aiErrorMessage = AppStrings.get(widget.language, 'rate_limit');
+          stock.isAiLoading = false;
+        });
+        return;
+      }
+
+      if (response.statusCode != 200) {
+        setState(() {
+          stock.aiErrorMessage =
+              'Gemini API Error (${response.statusCode}): Please verify your API Key in Settings.';
+          stock.isAiLoading = false;
+        });
+        return;
+      }
+
+      final body = jsonDecode(response.body);
+      final rawText =
+          body['candidates']?[0]?['content']?['parts']?[0]?['text'] ?? '{}';
+      final cleaned =
+          rawText.replaceAll('```json', '').replaceAll('```', '').trim();
+      final Map<String, dynamic> j = jsonDecode(cleaned);
+
+      String action = (j['action'] ?? 'AVOID').toString().toUpperCase().trim();
+      if (!['BUY', 'SELL', 'WAIT', 'AVOID'].contains(action)) {
+        action = 'AVOID';
+      }
+
+      final double entry =
+          (j['entry_price'] as num?)?.toDouble() ?? quote.price;
+      double sl = (j['stop_loss'] as num?)?.toDouble() ?? 0.0;
+      double target = (j['target_price'] as num?)?.toDouble() ?? 0.0;
+
+      //Deterministic Safety Math: Verify Position Size for Rs 100 Max Loss & 1:2 Risk-Reward
+      int shares = 0;
+      String rrString = 'N/A';
+
+      if (action == 'BUY' || action == 'SELL') {
+        final double riskPerShare = (entry - sl).abs();
+        final double rewardPerShare = (target - entry).abs();
+
+        if (riskPerShare <= 0.01) {
+          action = 'AVOID';
+        } else {
+          final double rr = rewardPerShare / riskPerShare;
+          rrString = '1 : ${rr.toStringAsFixed(1)}';
+          // Enforce strict 1:2 minimum risk-reward rule
+          if (rr < 1.95) {
+            action = 'AVOID';
+          } else {
+            shares = (100.0 / riskPerShare).floor();
+            if (shares < 1) {
+              action = 'AVOID';
             }
-          ]
-        }),
+          }
+        }
+      }
+
+      final String freshnessText = quote.isDelayedOver5Min
+          ? 'PRACTICE ONLY - DELAYED DATA (${quote.delayMinutes} min delay)'
+          : (j['data_freshness'] ?? 'LIVE DATA (<5 min delay)').toString();
+
+      final card = ActionCardData(
+        dataFreshness: freshnessText,
+        action: action,
+        confidence: (j['confidence'] ?? 'Low').toString(),
+        confidenceReason: (j['confidence_reason'] ?? '').toString(),
+        entryPrice: entry,
+        sharesForMaxLoss100: shares,
+        stopLoss: sl,
+        targetPrice: target,
+        riskRewardRatio: rrString,
+        squareOffNote: 'Square off before market close (3:20 PM IST)',
+        technicalWhy: (j['technical_why'] ?? '').toString(),
+        fundamentalWhy: (j['fundamental_why'] ?? '').toString(),
+        newsWhy: (j['news_why'] ?? '').toString(),
+        whatProvesWrong: (j['what_proves_wrong'] ?? '').toString(),
+        dataGaps: (j['data_gaps'] ?? '').toString(),
+        footerDisclaimer:
+            'Educational analysis, not financial advice. Paper trading only.',
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final rawText = data['candidates'][0]['content']['parts'][0]['text'];
-        final cleanedJson = rawText
-            .replaceAll('```json', '')
-            .replaceAll('```', '')
-            .trim();
-
-        final parsedMap = jsonDecode(cleanedJson);
-
-        final card = AiSignalCard(
-          action: parsedMap['action'] ?? 'WAIT',
-          confidence: parsedMap['confidence'] ?? 'Low',
-          reasonLine: parsedMap['reason_line'] ?? '',
-          entryPrice: parsedMap['entry_price'] ?? '',
-          shares: parsedMap['shares'] ?? '',
-          stopLoss: parsedMap['stop_loss'] ?? '',
-          target: parsedMap['target'] ?? '',
-          squareOffNote: parsedMap['square_off'] ?? '',
-          techReason: parsedMap['tech'] ?? '',
-          fundReason: parsedMap['fund'] ?? '',
-          newsReason: parsedMap['news'] ?? '',
-          invalidation: parsedMap['invalidation'] ?? '',
-          dataGaps: parsedMap['data_gaps'] ?? '',
-        );
-
-        setState(() {
-          quote.signalCard = card;
-          quote.isAiLoading = false;
-        });
-      } else {
-        setState(() {
-          quote.aiError = 'AI API Error: ${response.statusCode}';
-          quote.isAiLoading = false;
-        });
-      }
-    } catch (e) {
       setState(() {
-        quote.aiError = 'Failed to generate signal ($e)';
-        quote.isAiLoading = false;
+        stock.actionCard = card;
+        stock.isAiLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        stock.aiErrorMessage = 'AI parsing error ($e)';
+        stock.isAiLoading = false;
       });
     }
   }
 
-  void _logSignalAsTrade(StockItem stock) {
-    final quote = stock.quote;
-    if (quote == null || quote.signalCard == null) return;
-    final card = quote.signalCard!;
-
-    // Check open trade risk limit (Max Rs 300 across open trades)
-    int openCount = widget.paperTrades.where((t) => t['status'] == 'OPEN').length;
-    if (openCount >= 3) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Max risk limit reached: At most 3 open trades allowed (Rs 300 total risk).')),
-      );
-      return;
-    }
-
-    final newTrade = {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'symbol': stock.symbol,
-      'action': card.action,
-      'entry': quote.price,
-      'target': card.target,
-      'stopLoss': card.stopLoss,
-      'time': DateFormat('dd MMM, hh:mm a').format(DateTime.now()),
-      'status': 'OPEN',
-      'pnl': 0.0,
-    };
-
-    widget.onAddTrade(newTrade);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Signal logged as virtual paper trade!')),
-    );
-  }
-
   void _openSettingsSheet() {
-    final keyController = TextEditingController(text: widget.geminiApiKey);
+    final keyCtrl = TextEditingController(text: widget.geminiApiKey);
+    final promptCtrl = TextEditingController(text: widget.customAnalystPrompt);
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-          ),
-          child: StatefulBuilder(
-            builder: (context, setModalState) {
-              final lang = widget.language;
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppStrings.get(lang, 'settings'),
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const Divider(),
-                  SwitchListTile(
-                    title: Text(AppStrings.get(lang, 'theme_title')),
-                    subtitle: Text(AppStrings.get(lang, 'theme_sub')),
-                    value: widget.isDarkMode,
-                    onChanged: (val) {
-                      widget.onThemeChanged(val);
-                      setModalState(() {});
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  ListTile(
-                    title: Text(AppStrings.get(lang, 'lang_title')),
-                    subtitle: Text(AppStrings.get(lang, 'lang_sub')),
-                    trailing: SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(value: 'EN', label: Text('English')),
-                        ButtonSegment(value: 'TE', label: Text('తెలుగు')),
-                      ],
-                      selected: {widget.language},
-                      onSelectionChanged: (newSet) {
-                        widget.onLanguageChanged(newSet.first);
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final lang = widget.language;
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.get(lang, 'settings'),
+                      style: const TextStyle(
+                          fontSize: 19, fontWeight: FontWeight.bold),
+                    ),
+                    const Divider(),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(AppStrings.get(lang, 'theme_title')),
+                      subtitle: Text(AppStrings.get(lang, 'theme_sub')),
+                      value: widget.isDarkMode,
+                      onChanged: (val) {
+                        widget.onThemeChanged(val);
                         setModalState(() {});
                       },
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: keyController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: AppStrings.get(lang, 'key_title'),
-                      hintText: AppStrings.get(lang, 'key_hint'),
-                      border: const OutlineInputBorder(),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(AppStrings.get(lang, 'lang_title')),
+                      subtitle: Text(AppStrings.get(lang, 'lang_sub')),
+                      trailing: SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(value: 'EN', label: Text('English')),
+                          ButtonSegment(value: 'TE', label: Text('తెలుగు')),
+                        ],
+                        selected: {widget.language},
+                        onSelectionChanged: (newSet) {
+                          widget.onLanguageChanged(newSet.first);
+                          setModalState(() {});
+                        },
+                      ),
                     ),
-                    onChanged: (val) {
-                      widget.onApiKeyChanged(val);
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(AppStrings.get(lang, 'close')),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: keyCtrl,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: AppStrings.get(lang, 'key_label'),
+                        hintText: AppStrings.get(lang, 'key_hint'),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.key),
+                      ),
                     ),
-                  ),
-                ],
-              );
-            },
-          ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: promptCtrl,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        labelText: AppStrings.get(lang, 'prompt_label'),
+                        hintText: AppStrings.get(lang, 'prompt_hint'),
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          await widget.onSecretsSaved(
+                              keyCtrl.text, promptCtrl.text);
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                        icon: const Icon(Icons.save),
+                        label: Text(AppStrings.get(lang, 'save_close')),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  Color _getActionColor(String action) {
-    switch (action.toUpperCase()) {
+  Color _badgeColorForAction(String action) {
+    switch (action) {
       case 'BUY':
-        return Colors.green;
+        return Colors.green.shade700;
       case 'SELL':
-        return Colors.red;
+        return Colors.red.shade700;
       case 'WAIT':
-        return Colors.orange;
+        return Colors.amber.shade800;
       default:
-        return Colors.grey;
+        return Colors.blueGrey.shade700;
     }
   }
 
@@ -750,6 +894,7 @@ RULES:
     final lang = widget.language;
     final selectedStock = _stocks[_selectedIndex];
     final quote = selectedStock.quote;
+    final card = selectedStock.actionCard;
     final timeFormatter = DateFormat('dd MMM, hh:mm:ss a');
     final googleSymbol = selectedStock.symbol.replaceAll('.NS', ':NSE');
 
@@ -768,506 +913,467 @@ RULES:
           ),
         ],
       ),
-      body: _bottomNavIndex == 0
-          ? Column(
-              children: [
-                Container(
-                  width: double.infinity,
+      body: Column(
+        children: [
+          // 1. Market Status Banner
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            color: _isMarketOpen
+                ? Colors.green.withOpacity(0.2)
+                : Colors.orange.withOpacity(0.2),
+            child: Text(
+              _isMarketOpen
+                  ? AppStrings.get(lang, 'market_open')
+                  : AppStrings.get(lang, 'market_closed'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: _isMarketOpen ? Colors.green : Colors.orange,
+              ),
+            ),
+          ),
+
+          // 2. 5 Starter Stocks Tabs
+          SizedBox(
+            height: 52,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              itemCount: _stocks.length,
+              itemBuilder: (context, index) {
+                final isSelected = index == _selectedIndex;
+                return Padding(
                   padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  color: _isMarketOpen
-                      ? Colors.green.withOpacity(0.2)
-                      : Colors.orange.withOpacity(0.2),
-                  child: Text(
-                    _isMarketOpen
-                        ? AppStrings.get(lang, 'market_open')
-                        : AppStrings.get(lang, 'market_closed'),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                      color: _isMarketOpen ? Colors.green : Colors.orange,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 52,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    itemCount: _stocks.length,
-                    itemBuilder: (context, index) {
-                      final isSelected = index == _selectedIndex;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 6),
-                        child: ChoiceChip(
-                          label:
-                              Text(_stocks[index].symbol.replaceAll('.NS', '')),
-                          selected: isSelected,
-                          onSelected: (_) {
-                            setState(() {
-                              _selectedIndex = index;
-                            });
-                          },
-                        ),
-                      );
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                  child: ChoiceChip(
+                    label: Text(_stocks[index].symbol.replaceAll('.NS', '')),
+                    selected: isSelected,
+                    onSelected: (_) {
+                      setState(() {
+                        _selectedIndex = index;
+                      });
                     },
                   ),
-                ),
-                const Divider(height: 1),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(14.0),
-                    child: Column(
-                      children: [
-                        Card(
-                          elevation: 2,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (quote != null && quote.isDelayedOver5Min)
-                                  Container(
-                                    width: double.infinity,
-                                    margin: const EdgeInsets.only(bottom: 10),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.shade700,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      '${AppStrings.get(lang, 'delayed_badge')} (${quote.delayMinutes}m)',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          selectedStock.symbol,
-                                          style: const TextStyle(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        Text(
-                                          selectedStock.name,
-                                          style: const TextStyle(
-                                              fontSize: 13, color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                    if (quote != null)
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            AppStrings.get(lang, 'ltp'),
-                                            style: const TextStyle(
-                                                fontSize: 11,
-                                                color: Colors.grey),
-                                          ),
-                                          Text(
-                                            'Rs ${quote.price.toStringAsFixed(2)}',
-                                            style: const TextStyle(
-                                                fontSize: 28,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      quote != null
-                                          ? '${AppStrings.get(lang, 'candles_count')} ${quote.bars.length}'
-                                          : '',
-                                      style: const TextStyle(
-                                          fontSize: 12, color: Colors.grey),
-                                    ),
-                                    SegmentedButton<bool>(
-                                      segments: [
-                                        ButtonSegment(
-                                          value: false,
-                                          label: Text(
-                                              AppStrings.get(
-                                                  lang, 'chart_line'),
-                                              style: const TextStyle(
-                                                  fontSize: 12)),
-                                        ),
-                                        ButtonSegment(
-                                          value: true,
-                                          label: Text(
-                                              AppStrings.get(
-                                                  lang, 'chart_candle'),
-                                              style: const TextStyle(
-                                                  fontSize: 12)),
-                                        ),
-                                      ],
-                                      selected: {_showCandlestick},
-                                      onSelectionChanged: (val) {
-                                        setState(() {
-                                          _showCandlestick = val.first;
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                if (selectedStock.isLoading)
-                                  const SizedBox(
-                                    height: 180,
-                                    child: Center(
-                                        child: CircularProgressIndicator()),
-                                  )
-                                else if (selectedStock.errorMessage.isNotEmpty)
-                                  SizedBox(
-                                    height: 180,
-                                    child: Center(
-                                      child: Text(
-                                        selectedStock.errorMessage,
-                                        style: const TextStyle(
-                                            color: Colors.red),
-                                      ),
-                                    ),
-                                  )
-                                else if (quote != null &&
-                                    quote.bars.isNotEmpty)
-                                  Container(
-                                    height: 180,
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: Colors.grey.withOpacity(0.3)),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: CustomPaint(
-                                      painter: StockChartPainter(
-                                        bars: quote.bars,
-                                        isCandlestick: _showCandlestick,
-                                        isDark: widget.isDarkMode,
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  SizedBox(
-                                    height: 180,
-                                    child: Center(
-                                      child: Text(
-                                          AppStrings.get(lang, 'no_candles')),
-                                    ),
-                                  ),
-                                const SizedBox(height: 14),
-                                if (quote != null) ...[
-                                  Text(
-                                    '${AppStrings.get(lang, 'trade_time')}: ${timeFormatter.format(quote.tradeTimeIst)}',
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                            ),
-                            onPressed: quote != null && quote.isAiLoading
-                                ? null
-                                : () => _generateAiSignal(selectedStock),
-                            icon: const Icon(Icons.psychology),
-                            label: Text(
-                              AppStrings.get(lang, 'get_ai_signal'),
-                              style: const TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        if (quote != null && quote.isAiLoading)
-                          Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                children: [
-                                  const CircularProgressIndicator(),
-                                  const SizedBox(height: 16),
-                                  Text(AppStrings.get(lang, 'analyzing')),
-                                ],
+                );
+              },
+            ),
+          ),
+
+          const Divider(height: 1),
+
+          // 3. Scrollable Main Content: Chart Card + AI Action Card
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(14.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Price & Switchable Chart Card
+                  Card(
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (quote != null && quote.isDelayedOver5Min)
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade700,
+                                borderRadius: BorderRadius.circular(4),
                               ),
-                            ),
-                          )
-                        else if (quote != null && quote.aiError.isNotEmpty)
-                          Card(
-                            color: Colors.red.withOpacity(0.1),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
                               child: Text(
-                                quote.aiError,
-                                style: const TextStyle(color: Colors.red),
+                                '${AppStrings.get(lang, 'delayed_badge')} (${quote.delayMinutes}m)',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          )
-                        else if (quote != null && quote.signalCard != null)
-                          Card(
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                color:
-                                    _getActionColor(quote.signalCard!.action),
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: _getActionColor(
-                                              quote.signalCard!.action),
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          quote.signalCard!.action,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ),
-                                      Text(
-                                        'Confidence: ${quote.signalCard!.confidence}',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
                                   Text(
-                                    quote.signalCard!.reasonLine,
+                                    selectedStock.symbol,
                                     style: const TextStyle(
-                                        fontSize: 14,
-                                        fontStyle: FontStyle.italic),
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold),
                                   ),
-                                  const Divider(height: 20),
-                                  if (quote.signalCard!.action == 'BUY' ||
-                                      quote.signalCard!.action == 'SELL') ...[
-                                    Text(
-                                        'Entry Price: ${quote.signalCard!.entryPrice}'),
-                                    Text(
-                                        'Max Loss Shares: ${quote.signalCard!.shares}'),
-                                    Text(
-                                        'Stop-Loss: ${quote.signalCard!.stopLoss}'),
-                                    Text('Target: ${quote.signalCard!.target}'),
-                                    Text(quote.signalCard!.squareOffNote,
-                                        style: const TextStyle(
-                                            color: Colors.orange,
-                                            fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 12),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: OutlinedButton.icon(
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor: Colors.green,
-                                        ),
-                                        onPressed: () =>
-                                            _logSignalAsTrade(selectedStock),
-                                        icon: const Icon(Icons.bookmark_add),
-                                        label: Text(AppStrings.get(
-                                            lang, 'log_paper_trade')),
-                                      ),
-                                    ),
-                                    const Divider(height: 20),
-                                  ],
                                   Text(
-                                      'Technical: ${quote.signalCard!.techReason}'),
-                                  Text(
-                                      'Fundamental: ${quote.signalCard!.fundReason}'),
-                                  Text('News: ${quote.signalCard!.newsReason}'),
+                                    selectedStock.name,
+                                    style: const TextStyle(
+                                        fontSize: 13, color: Colors.grey),
+                                  ),
                                 ],
                               ),
-                            ),
+                              if (quote != null)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      AppStrings.get(lang, 'ltp'),
+                                      style: const TextStyle(
+                                          fontSize: 11, color: Colors.grey),
+                                    ),
+                                    Text(
+                                      'Rs ${quote.price.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                            ],
                           ),
-                      ],
+                          if (quote != null) ...[
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 4,
+                              children: [
+                                Text(
+                                    'VWAP: Rs ${quote.vwap.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600)),
+                                Text('RSI(14): ${quote.rsi14.toStringAsFixed(1)}',
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600)),
+                                Text('Vol: ${quote.totalDayVolume}',
+                                    style: const TextStyle(
+                                        fontSize: 12, color: Colors.grey)),
+                              ],
+                            ),
+                          ],
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                quote != null
+                                    ? '${AppStrings.get(lang, 'candles_count')} ${quote.bars.length}'
+                                    : '',
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.grey),
+                              ),
+                              SegmentedButton<bool>(
+                                segments: [
+                                  ButtonSegment(
+                                    value: false,
+                                    label: Text(
+                                        AppStrings.get(lang, 'chart_line'),
+                                        style: const TextStyle(fontSize: 12)),
+                                  ),
+                                  ButtonSegment(
+                                    value: true,
+                                    label: Text(
+                                        AppStrings.get(lang, 'chart_candle'),
+                                        style: const TextStyle(fontSize: 12)),
+                                  ),
+                                ],
+                                selected: {_showCandlestick},
+                                onSelectionChanged: (val) {
+                                  setState(() {
+                                    _showCandlestick = val.first;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          if (selectedStock.isLoading)
+                            const SizedBox(
+                              height: 190,
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          else if (selectedStock.errorMessage.isNotEmpty)
+                            SizedBox(
+                              height: 190,
+                              child: Center(
+                                child: Text(
+                                  selectedStock.errorMessage,
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            )
+                          else if (quote != null && quote.bars.isNotEmpty)
+                            Container(
+                              height: 190,
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Colors.grey.withOpacity(0.3)),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: CustomPaint(
+                                painter: StockChartPainter(
+                                  bars: quote.bars,
+                                  isCandlestick: _showCandlestick,
+                                  isDark: widget.isDarkMode,
+                                ),
+                              ),
+                            )
+                          else
+                            SizedBox(
+                              height: 190,
+                              child: Center(
+                                child: Text(AppStrings.get(lang, 'no_candles')),
+                              ),
+                            ),
+                          const SizedBox(height: 10),
+                          if (quote != null) ...[
+                            Text(
+                              '${AppStrings.get(lang, 'trade_time')}: ${timeFormatter.format(quote.tradeTimeIst)}',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            Text(
+                              '${AppStrings.get(lang, 'fetch_time')}: ${timeFormatter.format(quote.fetchTimeIst)}',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                          ],
+                          const SizedBox(height: 6),
+                          Text(
+                            '${AppStrings.get(lang, 'verify_title')} google.com/finance/quote/$googleSymbol',
+                            style: const TextStyle(
+                                fontSize: 11, color: Colors.grey),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ]
-          : ResultsLogView(
-              paperBalance: widget.paperBalance,
-              paperTrades: widget.paperTrades,
-              onResetAccount: widget.onResetAccount,
-              language: lang,
-            ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _bottomNavIndex,
-        onDestinationSelected: (idx) {
-          setState(() {
-            _bottomNavIndex = idx;
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.show_chart),
-            label: 'Trade & AI',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long),
-            label: 'Results Log',
-          ),
-        ],
-      ),
-    );
-  }
-}
 
-// Results & Stats Screen View
-class ResultsLogView extends StatelessWidget {
-  final double paperBalance;
-  final List> paperTrades;
-  final VoidCallback onResetAccount;
-  final String language;
+                  const SizedBox(height: 12),
 
-  const ResultsLogView({
-    super.key,
-    required this.paperBalance,
-    required this.paperTrades,
-    required this.onResetAccount,
-    required this.language,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    int totalTrades = paperTrades.length;
-    int winningTrades = paperTrades.where((t) => (t['pnl'] ?? 0.0) > 0).totaLength;
-    double winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0.0;
-    double totalProfit = paperTrades.fold(0.0, (sum, t) => sum + (t['pnl'] ?? 0.0));
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppStrings.get(language, 'results_tab'),
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              OutlinedButton.icon(
-                onPressed: onResetAccount,
-                icon: const Icon(Icons.refresh, size: 16),
-                label: Text(AppStrings.get(language, 'reset_account')),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Card(
-            elevation: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(AppStrings.get(language, 'virtual_balance')),
-                      Text('Rs ${paperBalance.toStringAsFixed(2)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ],
+                  // Button to Trigger AI Intraday Analyst
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: (quote == null || selectedStock.isAiLoading)
+                        ? null
+                        : () => _runIntradayAnalyst(selectedStock),
+                    icon: const Icon(Icons.analytics_outlined),
+                    label: Text(
+                      AppStrings.get(lang, 'run_analyst'),
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                  const Divider(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(AppStrings.get(language, 'win_rate')),
-                      Text('${winRate.toStringAsFixed(1)}% ($winningTrades/$totalTrades)',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(AppStrings.get(language, 'total_profit')),
-                      Text('Rs ${totalProfit.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: totalProfit >= 0 ? Colors.green : Colors.red,
-                          )),
-                    ],
-                  ),
+
+                  const SizedBox(height: 12),
+
+                  // AI Loading / Error / 7-Point Action Card Output
+                  if (selectedStock.isAiLoading)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: 12),
+                            Text(
+                              AppStrings.get(lang, 'analyzing'),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if (selectedStock.aiErrorMessage.isNotEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          selectedStock.aiErrorMessage,
+                          style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    )
+                  else if (card != null)
+                    Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color: _badgeColorForAction(card.action),
+                          width: 2,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header + 2. ACTION Badge
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  AppStrings.get(lang, 'card_header'),
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: _badgeColorForAction(card.action),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '2. ACTION: ${card.action}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+
+                            // 1. Data Freshness
+                            Text(
+                              AppStrings.get(lang, 'freshness_label'),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            Text(
+                              card.dataFreshness,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: card.dataFreshness
+                                        .contains('PRACTICE ONLY')
+                                    ? Colors.redAccent
+                                    : Colors.green,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            // 3. Confidence + 1-line reason
+                            Text(
+                              '${AppStrings.get(lang, 'confidence_label')} ${card.confidence}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            Text(card.confidenceReason,
+                                style: const TextStyle(fontSize: 13)),
+
+                            const Divider(height: 20),
+
+                            // 4. If BUY or SELL: Entry, Shares for Rs 100 max loss, SL, Target, Square Off
+                            if (card.action == 'BUY' ||
+                                card.action == 'SELL') ...[
+                              Text(
+                                AppStrings.get(lang, 'trade_plan_label'),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                              const SizedBox(height: 6),
+                              Wrap(
+                                spacing: 16,
+                                runSpacing: 6,
+                                children: [
+                                  Text(
+                                      '${AppStrings.get(lang, 'entry_label')}: Rs ${card.entryPrice.toStringAsFixed(2)}'),
+                                  Text(
+                                      '${AppStrings.get(lang, 'shares_label')}: ${card.sharesForMaxLoss100}'),
+                                  Text(
+                                      '${AppStrings.get(lang, 'sl_label')}: Rs ${card.stopLoss.toStringAsFixed(2)}'),
+                                  Text(
+                                      '${AppStrings.get(lang, 'target_label')}: Rs ${card.targetPrice.toStringAsFixed(2)}'),
+                                  Text(
+                                      '${AppStrings.get(lang, 'rr_label')}: ${card.riskRewardRatio}'),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                card.squareOffNote,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange,
+                                ),
+                              ),
+                              const Divider(height: 20),
+                            ],
+
+                            // 5. Why (1 line each: Technical, Fundamental, News)
+                            Text(
+                              AppStrings.get(lang, 'why_label'),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                                '• ${AppStrings.get(lang, 'tech_label')}: ${card.technicalWhy}',
+                                style: const TextStyle(fontSize: 13)),
+                            const SizedBox(height: 2),
+                            Text(
+                                '• ${AppStrings.get(lang, 'fund_label')}: ${card.fundamentalWhy}',
+                                style: const TextStyle(fontSize: 13)),
+                            const SizedBox(height: 2),
+                            Text(
+                                '• ${AppStrings.get(lang, 'news_label')}: ${card.newsWhy}',
+                                style: const TextStyle(fontSize: 13)),
+                            const SizedBox(height: 10),
+
+                            // 6. What would prove this wrong
+                            Text(
+                              AppStrings.get(lang, 'wrong_label'),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            Text(card.whatProvesWrong,
+                                style: const TextStyle(fontSize: 13)),
+                            const SizedBox(height: 10),
+
+                            // 7. Data gaps
+                            Text(
+                              AppStrings.get(lang, 'gaps_label'),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            Text(card.dataGaps,
+                                style: const TextStyle(fontSize: 13)),
+
+                            const Divider(height: 20),
+                            Text(
+                              card.footerDisclaimer,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          const Text('Logged Paper Trades:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-          const SizedBox(height: 8),
-          Expanded(
-            child: paperTrades.isEmpty
-                ? Center(
-                    child: Text(
-                      AppStrings.get(language, 'no_trades'),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: paperTrades.length,
-                    itemBuilder: (context, index) {
-                      final t = paperTrades[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          title: Text('${t['symbol']} - ${t['action']}'),
-                          subtitle: Text('Entry: Rs ${t['entry']} | Time: ${t['time']}'),
-                          trailing: Text(
-                            t['status'],
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: t['status'] == 'OPEN' ? Colors.orange : Colors.green,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
           ),
         ],
       ),
@@ -1392,7 +1498,7 @@ class StockChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant StockChartPainter oldDelegate) {
     return oldDelegate.bars != bars ||
-        oldDelegate.isCandlestick == isCandlestick ||
-        oldDelegate.isDark == isDark;
+        oldDelegate.isCandlestick != isCandlestick ||
+        oldDelegate.isDark != isDark;
   }
 }
