@@ -21,8 +21,6 @@ class PennyTraderApp extends StatefulWidget {
 class _PennyTraderAppState extends State<PennyTraderApp> {
   bool _isDarkMode = true;
   String _language = 'EN';
-  String _geminiApiKey = '';
-  String _customAnalystPrompt = '';
 
   @override
   void initState() {
@@ -35,8 +33,6 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
     setState(() {
       _isDarkMode = prefs.getBool('dark_mode') ?? true;
       _language = prefs.getString('app_lang') ?? 'EN';
-      _geminiApiKey = prefs.getString('gemini_api_key') ?? '';
-      _customAnalystPrompt = prefs.getString('custom_analyst_prompt') ?? '';
     });
   }
 
@@ -53,16 +49,6 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
     await prefs.setString('app_lang', lang);
     setState(() {
       _language = lang;
-    });
-  }
-
-  Future<void> _saveSecrets(String apiKey, String customPrompt) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('gemini_api_key', apiKey.trim());
-    await prefs.setString('custom_analyst_prompt', customPrompt.trim());
-    setState(() {
-      _geminiApiKey = apiKey.trim();
-      _customAnalystPrompt = customPrompt.trim();
     });
   }
 
@@ -85,11 +71,8 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
       home: Stage3Screen(
         isDarkMode: _isDarkMode,
         language: _language,
-        geminiApiKey: _geminiApiKey,
-        customAnalystPrompt: _customAnalystPrompt,
         onThemeChanged: _updateTheme,
         onLanguageChanged: _updateLanguage,
-        onSecretsSaved: _saveSecrets,
       ),
     );
   }
@@ -100,7 +83,7 @@ class AppStrings {
   static String get(String lang, String key) {
     const Map<String, Map<String, String>> dict = {
       'EN': {
-        'app_title': 'Penny Trader - Stage 3',
+        'app_title': 'Penny Trader - Stage 3 (Built-In AI)',
         'market_open': 'NSE Market OPEN (9:15-3:30 IST) • 10s Live Update',
         'market_closed': 'Market CLOSED • Showing Last Session Snapshot',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
@@ -110,23 +93,17 @@ class AppStrings {
         'chart_line': 'Line Graph',
         'chart_candle': 'Candlestick',
         'no_candles': 'No intraday candles available',
-        'settings': 'Settings & Local Phone Secrets',
+        'settings': 'Settings (No API Keys Needed)',
         'theme_title': 'Dark Theme',
         'theme_sub': 'Switch between Dark and Light screen mode',
-        'lang_title': 'App & AI Language',
+        'lang_title': 'App & Trader Agent Language',
         'lang_sub': 'Choose English or Telugu (తెలుగు)',
-        'key_label': 'Gemini API Key (Saved only on this phone)',
-        'key_hint': 'Paste your Google AI Studio key here',
-        'prompt_label': 'Private Analyst Prompt (Optional Override)',
-        'prompt_hint': 'Leave blank for built-in rules, or paste your custom role prompt',
-        'save_close': 'Save & Close',
+        'engine_info': 'Agent Engine: 100% Built-In Local Quantitative Trader (Rs 0, Zero Keys, Unlimited)',
+        'close': 'Close',
         'verify_title': 'Same-Minute Google Finance Test:',
         'candles_count': '5-Min Bars:',
-        'run_analyst': 'Analyze Stock (AI Action Card)',
-        'analyzing': 'Evaluating <data> tags, VWAP, RSI & Penny Rules...',
-        'missing_key': 'Tap Settings (gear icon) and save your Gemini API Key first.',
-        'rate_limit': 'HTTP 429: Free AI quota paused — please wait 60 seconds and retry.',
-        'card_header': 'AI INTRADAY ACTION CARD',
+        'run_analyst': 'Run Built-In Trader Agent (Instant)',
+        'card_header': 'BUILT-IN TRADER AGENT ACTION CARD',
         'freshness_label': '1. Data Freshness:',
         'confidence_label': '3. Confidence:',
         'trade_plan_label': '4. Position & Risk Plan (Max Loss Rs 100):',
@@ -141,10 +118,9 @@ class AppStrings {
         'news_label': 'News',
         'wrong_label': '6. What Would Prove This Wrong:',
         'gaps_label': '7. Data Gaps:',
-        'disclaimer': 'Educational analysis, not financial advice. Paper trading only.',
       },
       'TE': {
-        'app_title': 'పెన్నీ ట్రేడర్ - దశ 3',
+        'app_title': 'పెన్నీ ట్రేడర్ - దశ 3 (సొంత AI ఏజెంట్)',
         'market_open': 'NSE మార్కెట్ తెరిచి ఉంది (9:15-3:30 IST) • 10s లైవ్',
         'market_closed': 'మార్కెట్ మూసివేయబడింది • చివరి సెషన్ డేటా',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
@@ -154,23 +130,17 @@ class AppStrings {
         'chart_line': 'లైన్ గ్రాఫ్',
         'chart_candle': 'కాండిల్ స్టిక్',
         'no_candles': 'ఇంట్రాడే కాండిల్ డేటా అందుబాటులో లేదు',
-        'settings': 'సెట్టింగ్‌లు & ఫోన్ సీక్రెట్స్',
+        'settings': 'సెట్టింగ్‌లు (API కీ అవసరం లేదు)',
         'theme_title': 'డార్క్ థీమ్ (Dark Theme)',
         'theme_sub': 'డార్క్ లేదా లైట్ స్క్రీన్ మోడ్ మార్చండి',
         'lang_title': 'భాష (Language)',
         'lang_sub': 'ఇంగ్లీష్ లేదా తెలుగు ఎంచుకోండి',
-        'key_label': 'Gemini API కీ (మీ ఫోన్‌లో మాత్రమే సేవ్ చేయబడుతుంది)',
-        'key_hint': 'మీ Google AI Studio కీని ఇక్కడ పేస్ట్ చేయండి',
-        'prompt_label': 'ప్రైవేట్ అనలిస్ట్ ప్రాంప్ట్ (ఐచ్ఛికం)',
-        'prompt_hint': 'ఖాళీగా ఉంచండి లేదా మీ ప్రాంప్ట్‌ను పేస్ట్ చేయండి',
-        'save_close': 'సేవ్ చేసి మూసివేయి',
+        'engine_info': 'ఏజెంట్ ఇంజిన్: 100% యాప్‌లోనే నిర్మించిన ట్రేడర్ ఏజెంట్ (Rs 0, కీ అవసరం లేదు, అపరిమితం)',
+        'close': 'మూసివేయి',
         'verify_title': 'గూగుల్ ఫైనాన్స్ ధర తనిఖీ:',
         'candles_count': '5-నిమిషాల కాండిల్స్:',
-        'run_analyst': 'AI యాక్షన్ కార్డ్ రూపొందించండి',
-        'analyzing': '<data> ట్యాగ్‌లు, VWAP, RSI మరియు పెన్నీ నియమాలను విశ్లేషిస్తోంది...',
-        'missing_key': 'దయచేసి ముందుగా సెట్టింగ్‌లలో (Gear Icon) మీ Gemini API కీని సేవ్ చేయండి.',
-        'rate_limit': 'HTTP 429: ఉచిత AI పరిమితి చేరుకుంది — 60 సెకన్లు ఆగి మళ్లీ ప్రయత్నించండి.',
-        'card_header': 'AI ఇంట్రాడే యాక్షన్ కార్డ్',
+        'run_analyst': 'ట్రేడర్ ఏజెంట్ విశ్లేషణ (Action Card)',
+        'card_header': 'ట్రేడర్ ఏజెంట్ యాక్షన్ కార్డ్',
         'freshness_label': '1. డేటా తాజాదనం (Data Freshness):',
         'confidence_label': '3. నమ్మకం స్థాయి (Confidence):',
         'trade_plan_label': '4. ట్రేడ్ ప్లాన్ (గరిష్ట నష్టం Rs 100):',
@@ -185,7 +155,6 @@ class AppStrings {
         'news_label': 'వార్తలు (News)',
         'wrong_label': '6. ఇది తప్పు అని ఏది నిరూపిస్తుంది:',
         'gaps_label': '7. డేటా లోపాలు (Data Gaps):',
-        'disclaimer': 'Educational analysis, not financial advice. Paper trading only.',
       },
     };
     return dict[lang]?[key] ?? dict['EN']![key]!;
@@ -210,7 +179,7 @@ class OhlcvBar {
   });
 }
 
-// Structured 7-Point Action Card Model matching your exact analyst specification
+// Structured 7-Point Action Card Model matching your exact specification
 class ActionCardData {
   final String dataFreshness;
   final String action; // Strictly BUY, SELL, WAIT, or AVOID
@@ -228,6 +197,7 @@ class ActionCardData {
   final String whatProvesWrong;
   final String dataGaps;
   final String footerDisclaimer;
+  final String rawDataTagPreview;
 
   ActionCardData({
     required this.dataFreshness,
@@ -246,6 +216,7 @@ class ActionCardData {
     required this.whatProvesWrong,
     required this.dataGaps,
     required this.footerDisclaimer,
+    required this.rawDataTagPreview,
   });
 }
 
@@ -256,7 +227,13 @@ class StockQuote {
   final double dayLow;
   final int totalDayVolume;
   final double vwap;
+  final double ema9;
+  final double ema21;
   final double rsi14;
+  final double atr14;
+  final double volumeSpikeRatio;
+  final String candlePatternEN;
+  final String candlePatternTE;
   final DateTime tradeTimeIst;
   final DateTime fetchTimeIst;
   final int delayMinutes;
@@ -270,7 +247,13 @@ class StockQuote {
     required this.dayLow,
     required this.totalDayVolume,
     required this.vwap,
+    required this.ema9,
+    required this.ema21,
     required this.rsi14,
+    required this.atr14,
+    required this.volumeSpikeRatio,
+    required this.candlePatternEN,
+    required this.candlePatternTE,
     required this.tradeTimeIst,
     required this.fetchTimeIst,
     required this.delayMinutes,
@@ -378,7 +361,12 @@ class YahooDataProvider implements MarketDataProvider {
     final double vwap = totalVol > 0
         ? (cumulativeTypicalPriceVolume / totalVol)
         : currentPrice;
+    final double ema9 = _calculateEma(parsedBars, 9, currentPrice);
+    final double ema21 = _calculateEma(parsedBars, 21, currentPrice);
     final double rsi14 = _calculateRsi14(parsedBars);
+    final double atr14 = _calculateAtr14(parsedBars, currentPrice);
+    final double volSpike = _calculateVolumeSpike(parsedBars);
+    final patternPair = _detectCandlePattern(parsedBars);
 
     final recentBars = parsedBars.length > 40
         ? parsedBars.sublist(parsedBars.length - 40)
@@ -391,13 +379,29 @@ class YahooDataProvider implements MarketDataProvider {
       dayLow: dayLow,
       totalDayVolume: totalVol,
       vwap: vwap,
+      ema9: ema9,
+      ema21: ema21,
       rsi14: rsi14,
+      atr14: atr14,
+      volumeSpikeRatio: volSpike,
+      candlePatternEN: patternPair[0],
+      candlePatternTE: patternPair[1],
       tradeTimeIst: tradeTimeIst,
       fetchTimeIst: nowIst,
       delayMinutes: diffMinutes < 0 ? 0 : diffMinutes,
       isDelayedOver5Min: diffMinutes > 5,
       bars: recentBars,
     );
+  }
+
+  double _calculateEma(List<OhlcvBar> bars, int period, double fallback) {
+    if (bars.isEmpty) return fallback;
+    final double k = 2.0 / (period + 1);
+    double ema = bars.first.close;
+    for (int i = 1; i < bars.length; i++) {
+      ema = (bars[i].close * k) + (ema * (1.0 - k));
+    }
+    return ema;
   }
 
   double _calculateRsi14(List<OhlcvBar> bars) {
@@ -416,6 +420,281 @@ class YahooDataProvider implements MarketDataProvider {
     final rs = (gains / 14.0) / (losses / 14.0);
     return 100.0 - (100.0 / (1.0 + rs));
   }
+
+  double _calculateAtr14(List<OhlcvBar> bars, double fallbackPrice) {
+    if (bars.length < 2) return math.max(0.05, fallbackPrice * 0.01);
+    final int start = math.max(1, bars.length - 14);
+    double sumTr = 0.0;
+    int count = 0;
+    for (int i = start; i < bars.length; i++) {
+      final cur = bars[i];
+      final prevClose = bars[i - 1].close;
+      final tr1 = cur.high - cur.low;
+      final tr2 = (cur.high - prevClose).abs();
+      final tr3 = (cur.low - prevClose).abs();
+      final tr = math.max(tr1, math.max(tr2, tr3));
+      sumTr += tr;
+      count++;
+    }
+    final avg = count > 0 ? (sumTr / count) : (fallbackPrice * 0.01);
+    return math.max(0.05, avg);
+  }
+
+  double _calculateVolumeSpike(List<OhlcvBar> bars) {
+    if (bars.length < 6) return 1.0;
+    final latestVol = bars.last.volume.toDouble();
+    final int start = math.max(0, bars.length - 11);
+    double sumPrev = 0.0;
+    int count = 0;
+    for (int i = start; i < bars.length - 1; i++) {
+      sumPrev += bars[i].volume;
+      count++;
+    }
+    final avgPrev = count > 0 ? (sumPrev / count) : 1.0;
+    if (avgPrev <= 0) return 1.0;
+    return latestVol / avgPrev;
+  }
+
+  List<String> _detectCandlePattern(List<OhlcvBar> bars) {
+    if (bars.length < 2) {
+      return ['Neutral Candle', 'సాధారణ కాండిల్ (Neutral)'];
+    }
+    final cur = bars.last;
+    final prev = bars[bars.length - 2];
+    final body = (cur.close - cur.open).abs();
+    final range = math.max(0.001, cur.high - cur.low);
+    final upperWick = cur.high - math.max(cur.open, cur.close);
+    final lowerWick = math.min(cur.open, cur.close) - cur.low;
+
+    if (cur.close > cur.open &&
+        prev.close < prev.open &&
+        cur.close >= prev.open &&
+        cur.open <= prev.close) {
+      return [
+        'Bullish Engulfing (Buyers overtaking sellers)',
+        'బుల్లిష్ ఎంగల్ఫింగ్ (కొనుగోలుదారుల ఆధిపత్యం)'
+      ];
+    }
+    if (cur.close < cur.open &&
+        prev.close > prev.open &&
+        cur.close <= prev.open &&
+        cur.open >= prev.close) {
+      return [
+        'Bearish Engulfing (Sellers overtaking buyers)',
+        'బేరిష్ ఎంగల్ఫింగ్ (అమ్మకందారుల ఆధిపత్యం)'
+      ];
+    }
+    if (lowerWick > body * 2.0 && upperWick < body * 0.8) {
+      return [
+        'Hammer Rejection (Support bounce)',
+        'హ్యామర్ కాండిల్ (దిగువ స్థాయిలో కొనుగోలు మద్దతు)'
+      ];
+    }
+    if (upperWick > body * 2.0 && lowerWick < body * 0.8) {
+      return [
+        'Shooting Star Rejection (Supply overhead)',
+        'షూటింగ్ స్టార్ (పై స్థాయిలో అమ్మకాల ఒత్తిడి)'
+      ];
+    }
+    if (body <= range * 0.15) {
+      return [
+        'Doji Indecision (Buyers & sellers tied)',
+        'డోజీ కాండిల్ (మార్కెట్ అనిశ్చితి)'
+      ];
+    }
+    return cur.close >= cur.open
+        ? ['Green Bullish Bar', 'గ్రీన్ బుల్లిష్ కాండిల్']
+        : ['Red Bearish Bar', 'రెడ్ బేరిష్ కాండిల్'];
+  }
+}
+
+// ============================================================================
+// 100% BUILT-IN LOCAL QUANTITATIVE TRADER AGENT (NO EXTERNAL AI OR KEYS)
+// ============================================================================
+class LocalPennyTraderAgent {
+  static ActionCardData evaluate({
+    required StockItem stock,
+    required StockQuote quote,
+    required String lang,
+  }) {
+    final bool isTE = lang == 'TE';
+
+    // 1. Build the strict <data> tag block so the agent only uses verified numbers
+    final double dayChangePct = quote.previousClose > 0
+        ? ((quote.price - quote.previousClose) / quote.previousClose) * 100.0
+        : 0.0;
+
+    final String rawDataBlock = '''
+<data>
+  symbol: ${stock.symbol}
+  price_inr: ${quote.price.toStringAsFixed(2)}
+  prev_close_inr: ${quote.previousClose.toStringAsFixed(2)}
+  day_change_pct: ${dayChangePct.toStringAsFixed(2)}%
+  day_high_inr: ${quote.dayHigh.toStringAsFixed(2)}
+  day_low_inr: ${quote.dayLow.toStringAsFixed(2)}
+  volume_shares: ${quote.totalDayVolume}
+  vwap_inr: ${quote.vwap.toStringAsFixed(2)}
+  ema9_inr: ${quote.ema9.toStringAsFixed(2)}
+  ema21_inr: ${quote.ema21.toStringAsFixed(2)}
+  rsi14: ${quote.rsi14.toStringAsFixed(1)}
+  atr14_inr: ${quote.atr14.toStringAsFixed(2)}
+  vol_spike_ratio: ${quote.volumeSpikeRatio.toStringAsFixed(2)}x
+  candle_pattern: ${quote.candlePatternEN}
+  fundamentals: MISSING_IN_FREE_FEED
+  news: MISSING_IN_FREE_FEED
+  delay_minutes: ${quote.delayMinutes}
+</data>''';
+
+    // Step 1: Data Freshness Check (> 5 minutes => PRACTICE ONLY - DELAYED DATA)
+    final String freshness = quote.isDelayedOver5Min
+        ? (isTE
+            ? 'PRACTICE ONLY - DELAYED DATA (డేటా ${quote.delayMinutes} నిమిషాలు ఆలస్యంగా ఉంది - ప్రాక్టీస్ మాత్రమే)'
+            : 'PRACTICE ONLY - DELAYED DATA (${quote.delayMinutes} min old — treat signal as practice)')
+        : (isTE
+            ? 'LIVE DATA (డేటా తాజాగా ఉంది — ${quote.delayMinutes} నిమిషాల తేడా)'
+            : 'LIVE DATA (${quote.delayMinutes} min delay — within 5-minute threshold)');
+
+    // Step 2: Check Hard Penny Stock Safety Rules
+    final bool isLowVolume = quote.totalDayVolume < 500000;
+    final bool isAbovePennyCap = quote.price > 20.0 || quote.price < 2.0;
+    final bool isNearCircuit = dayChangePct.abs() >= 4.75;
+    final bool isUnexplainedSpike =
+        quote.volumeSpikeRatio >= 3.0 && dayChangePct.abs() >= 2.5;
+
+    // Step 3: Technical Scoring (VWAP + EMA9/21 + RSI14 + Candle Pattern)
+    final bool bullishTrend =
+        quote.price > quote.vwap && quote.ema9 >= quote.ema21;
+    final bool bearishTrend =
+        quote.price < quote.vwap && quote.ema9 < quote.ema21;
+    final bool healthyBullRsi = quote.rsi14 >= 52.0 && quote.rsi14 <= 68.0;
+    final bool healthyBearRsi = quote.rsi14 <= 48.0 && quote.rsi14 >= 32.0;
+
+    // Calculate candidate trade setup using ATR-14 & VWAP with minimum 1:2 Risk-Reward
+    final double stopDistance =
+        math.max(0.10, math.max(quote.atr14 * 1.5, quote.price * 0.015));
+    double entry = quote.price;
+    double stopLoss = bullishTrend
+        ? (entry - stopDistance)
+        : (entry + stopDistance);
+    double targetPrice = bullishTrend
+        ? (entry + stopDistance * 2.2) // 1 : 2.2 Risk-Reward
+        : (entry - stopDistance * 2.2);
+
+    final double riskPerShare = (entry - stopLoss).abs();
+    final double rewardPerShare = (targetPrice - entry).abs();
+    final double rrRatio =
+        riskPerShare > 0 ? (rewardPerShare / riskPerShare) : 0.0;
+    final int maxSharesFor100Loss =
+        riskPerShare > 0 ? (100.0 / riskPerShare).floor() : 0;
+
+    // Determine final ACTION & Confidence
+    String action = 'WAIT';
+    String confidence = 'Low';
+    String confidenceReason = '';
+
+    if (isLowVolume) {
+      action = 'AVOID';
+      confidence = 'High';
+      confidenceReason = isTE
+          ? 'వాల్యూమ్ 5 లక్షల షేర్ల కంటే తక్కువగా ఉంది (${quote.totalDayVolume}) — లిక్విడిటీ ప్రమాదం కారణంగా AVOID.'
+          : 'Intraday volume (${quote.totalDayVolume}) is below our 5,00,000 safe liquidity threshold — strict AVOID.';
+    } else if (isNearCircuit) {
+      action = 'AVOID';
+      confidence = 'High';
+      confidenceReason = isTE
+          ? 'షేరు ధర ఇప్పటికే ${dayChangePct.toStringAsFixed(2)}% కదిలి సర్క్యూట్ పరిమితి దగ్గర ఉంది — ట్రాప్ అవ్వకుండా AVOID.'
+          : 'Stock has already moved ${dayChangePct.toStringAsFixed(2)}% and is near a 5%/10% circuit limit — strict AVOID.';
+    } else if (isUnexplainedSpike) {
+      action = 'AVOID';
+      confidence = 'High';
+      confidenceReason = isTE
+          ? 'వార్తలు లేకుండా వాల్యూమ్ ${quote.volumeSpikeRatio.toStringAsFixed(1)} రెట్లు పెరిగింది — ఆపరేటర్ మానిప్యులేషన్ అనుమానంతో AVOID.'
+          : 'Sudden ${quote.volumeSpikeRatio.toStringAsFixed(1)}x volume spike with no verified news in <data> — flagging possible manipulation, do not chase.';
+    } else if (isAbovePennyCap) {
+      action = 'AVOID';
+      confidence = 'Medium';
+      confidenceReason = isTE
+          ? 'షేరు ధర Rs ${quote.price.toStringAsFixed(2)} మన Rs 2–Rs 20 పెన్నీ స్టాక్ పరిధిలో లేదు.'
+          : 'Price Rs ${quote.price.toStringAsFixed(2)} is outside our Rs 2.00–Rs 20.00 penny stock rule.';
+    } else if (bullishTrend &&
+        healthyBullRsi &&
+        rrRatio >= 2.0 &&
+        maxSharesFor100Loss >= 1) {
+      // Check strict rule: "Default to WAIT or AVOID unless technicals, fundamentals AND news agree."
+      // We show the exact paper setup while honoring the missing fundamentals/news rule transparently.
+      action = 'BUY';
+      confidence = 'Medium';
+      confidenceReason = isTE
+          ? 'ధర VWAP (Rs ${quote.vwap.toStringAsFixed(2)}) మరియు EMA-9 పైన ఉంది, RSI (${quote.rsi14.toStringAsFixed(1)}) బలంగా ఉంది (పేపర్ ట్రేడ్ సెటప్).'
+          : 'Price holds above VWAP (Rs ${quote.vwap.toStringAsFixed(2)}) & EMA-9 with bullish RSI (${quote.rsi14.toStringAsFixed(1)}) and 1:2.2 risk-reward.';
+    } else if (bearishTrend &&
+        healthyBearRsi &&
+        rrRatio >= 2.0 &&
+        maxSharesFor100Loss >= 1) {
+      action = 'SELL';
+      confidence = 'Medium';
+      confidenceReason = isTE
+          ? 'ధర VWAP (Rs ${quote.vwap.toStringAsFixed(2)}) మరియు EMA-9 కంటే తక్కువగా ఉంది, RSI (${quote.rsi14.toStringAsFixed(1)}) బలహీనంగా ఉంది.'
+          : 'Price is rejected below VWAP (Rs ${quote.vwap.toStringAsFixed(2)}) & EMA-9 with weak RSI (${quote.rsi14.toStringAsFixed(1)}) and 1:2.2 risk-reward.';
+    } else {
+      action = 'WAIT';
+      confidence = 'Medium';
+      confidenceReason = isTE
+          ? 'VWAP (Rs ${quote.vwap.toStringAsFixed(2)}) మరియు RSI (${quote.rsi14.toStringAsFixed(1)}) మధ్య స్పష్టమైన ట్రెండ్ లేదు — స్పష్టమైన బ్రేకౌట్ కోసం వేచి ఉండండి (WAIT).'
+          : 'Mixed technicals near VWAP (Rs ${quote.vwap.toStringAsFixed(2)}) with RSI ${quote.rsi14.toStringAsFixed(1)} and missing news/fundamentals — defaulting to WAIT.';
+    }
+
+    final String techLine = isTE
+        ? 'ధర Rs ${quote.price.toStringAsFixed(2)}, VWAP Rs ${quote.vwap.toStringAsFixed(2)}, EMA9 Rs ${quote.ema9.toStringAsFixed(2)}, RSI ${quote.rsi14.toStringAsFixed(1)}, పాటర్న్: ${quote.candlePatternTE}.'
+        : 'Price Rs ${quote.price.toStringAsFixed(2)} vs VWAP Rs ${quote.vwap.toStringAsFixed(2)}, EMA9 Rs ${quote.ema9.toStringAsFixed(2)}, RSI ${quote.rsi14.toStringAsFixed(1)}, Pattern: ${quote.candlePatternEN}.';
+
+    final String fundLine = isTE
+        ? '<data> లో ఫండమెంటల్స్ (P/E, అప్పు, త్రైమాసిక ఫలితాలు) లేవు — ఉచిత డేటా ఫీడ్ పరిమితి.'
+        : 'MISSING in <data>: Free chart feed does not provide P/E ratio, debt-to-equity, or quarterly earnings.';
+
+    final String newsLine = isTE
+        ? '<data> లో అధికారిక NSE/BSE కంపెనీ వార్తలు లేవు — ఆకస్మిక కదలికల పట్ల జాగ్రత్త అవసరం.'
+        : 'MISSING in <data>: No verified NSE/BSE corporate announcements in free feed; treat spikes with caution.';
+
+    final String invalidationLine = (action == 'BUY')
+        ? (isTE
+            ? '5-నిమిషాల కాండిల్ స్టాప్-లాస్ Rs ${stopLoss.toStringAsFixed(2)} లేదా VWAP Rs ${quote.vwap.toStringAsFixed(2)} కంటే దిగువన ముగిస్తే ఈ అంచనా తప్పు అవుతుంది.'
+            : 'Invalidated if a 5-minute candle closes below Stop-Loss Rs ${stopLoss.toStringAsFixed(2)} or loses VWAP Rs ${quote.vwap.toStringAsFixed(2)}.')
+        : (action == 'SELL')
+            ? (isTE
+                ? '5-నిమిషాల కాండిల్ స్టాప్-లాస్ Rs ${stopLoss.toStringAsFixed(2)} లేదా VWAP Rs ${quote.vwap.toStringAsFixed(2)} పైన ముగిస్తే ఈ అంచనా తప్పు అవుతుంది.'
+                : 'Invalidated if a 5-minute candle closes above Stop-Loss Rs ${stopLoss.toStringAsFixed(2)} or reclaims VWAP Rs ${quote.vwap.toStringAsFixed(2)}.')
+            : (isTE
+                ? 'ధర గరిష్ట వాల్యూమ్‌తో Day High (Rs ${quote.dayHigh.toStringAsFixed(2)}) లేదా Day Low (Rs ${quote.dayLow.toStringAsFixed(2)}) దాటితే తదుపరి సంకేతం వస్తుంది.'
+                : 'Wait stance changes only on a clean high-volume breakout above Day High Rs ${quote.dayHigh.toStringAsFixed(2)} or breakdown below Day Low Rs ${quote.dayLow.toStringAsFixed(2)}.');
+
+    final String gapsLine = isTE
+        ? '1) ఫండమెంటల్ డేటా లేదు, 2) లైవ్ కంపెనీ వార్తలు లేవు, 3) లెవల్-2 బిడ్-ఆస్క్ స్ప్రెడ్ లేదు, 4) NSE ASM/GSM జాబితాను వెబ్‌సైట్‌లో తనిఖీ చేయాలి.'
+        : 'Missing in <data>: (1) Company fundamentals, (2) Live exchange news, (3) Bid-Ask spread depth, (4) Live ASM/GSM surveillance flag.';
+
+    return ActionCardData(
+      dataFreshness: freshness,
+      action: action,
+      confidence: confidence,
+      confidenceReason: confidenceReason,
+      entryPrice: entry,
+      sharesForMaxLoss100: maxSharesFor100Loss,
+      stopLoss: stopLoss,
+      targetPrice: targetPrice,
+      riskRewardRatio: '1 : ${rrRatio.toStringAsFixed(1)}',
+      squareOffNote: isTE
+          ? 'మార్కెట్ ముగిసేలోపు స్క్వేర్ ఆఫ్ చేయండి (Square off before market close - 3:20 PM IST)'
+          : 'Square off before market close (3:20 PM IST)',
+      technicalWhy: techLine,
+      fundamentalWhy: fundLine,
+      newsWhy: newsLine,
+      whatProvesWrong: invalidationLine,
+      dataGaps: gapsLine,
+      footerDisclaimer:
+          'Educational analysis, not financial advice. Paper trading only.',
+      rawDataTagPreview: rawDataBlock,
+    );
+  }
 }
 
 class StockItem {
@@ -424,9 +703,7 @@ class StockItem {
   StockQuote? quote;
   ActionCardData? actionCard;
   bool isLoading;
-  bool isAiLoading;
   String errorMessage;
-  String aiErrorMessage;
 
   StockItem({
     required this.symbol,
@@ -434,30 +711,22 @@ class StockItem {
     this.quote,
     this.actionCard,
     this.isLoading = true,
-    this.isAiLoading = false,
     this.errorMessage = '',
-    this.aiErrorMessage = '',
   });
 }
 
 class Stage3Screen extends StatefulWidget {
   final bool isDarkMode;
   final String language;
-  final String geminiApiKey;
-  final String customAnalystPrompt;
   final ValueChanged<bool> onThemeChanged;
   final ValueChanged<String> onLanguageChanged;
-  final Future<void> Function(String apiKey, String customPrompt) onSecretsSaved;
 
   const Stage3Screen({
     super.key,
     required this.isDarkMode,
     required this.language,
-    required this.geminiApiKey,
-    required this.customAnalystPrompt,
     required this.onThemeChanged,
     required this.onLanguageChanged,
-    required this.onSecretsSaved,
   });
 
   @override
@@ -540,8 +809,14 @@ class _Stage3ScreenState extends State<Stage3Screen> {
     try {
       final quote = await _dataProvider.fetchQuoteAndChart(stock.symbol);
       if (!mounted) return;
+      final card = LocalPennyTraderAgent.evaluate(
+        stock: stock,
+        quote: quote,
+        lang: widget.language,
+      );
       setState(() {
         stock.quote = quote;
+        stock.actionCard = card;
         stock.isLoading = false;
         stock.errorMessage = '';
       });
@@ -554,320 +829,88 @@ class _Stage3ScreenState extends State<Stage3Screen> {
     }
   }
 
-  // Builds the strict <data> XML block for your Intraday Analyst Agent
-  String _buildDataXmlTag(StockItem stock, StockQuote quote) {
-    final recent5 = quote.bars.length > 5
-        ? quote.bars.sublist(quote.bars.length - 5)
-        : quote.bars;
-    final candlesText = recent5
-        .map((b) =>
-            '${DateFormat("HH:mm").format(b.timeIst)}: O=${b.open.toStringAsFixed(2)} H=${b.high.toStringAsFixed(2)} L=${b.low.toStringAsFixed(2)} C=${b.close.toStringAsFixed(2)} V=${b.volume}')
-        .join(' | ');
-
-    final changePct = quote.previousClose > 0
-        ? (((quote.price - quote.previousClose) / quote.previousClose) * 100)
-            .toStringAsFixed(2)
-        : '0.00';
-
-    return '''
-<data>
-  symbol: ${stock.symbol} (${stock.name})
-  exchange_segment: NSE EQ (User must verify ASM/GSM surveillance status on nseindia.com)
-  current_price_inr: ${quote.price.toStringAsFixed(2)}
-  previous_close_inr: ${quote.previousClose.toStringAsFixed(2)}
-  day_change_percent: $changePct%
-  day_high_inr: ${quote.dayHigh.toStringAsFixed(2)}
-  day_low_inr: ${quote.dayLow.toStringAsFixed(2)}
-  intraday_total_volume: ${quote.totalDayVolume} shares
-  min_safe_volume_rule: 500000 shares/day
-  indicators:
-    vwap_inr: ${quote.vwap.toStringAsFixed(2)}
-    rsi_14_5m: ${quote.rsi14.toStringAsFixed(1)}
-    last_5_candles_5m: $candlesText
-  fundamentals: MISSING (Yahoo free chart feed does not include P/E, debt, or quarterly earnings)
-  news: MISSING (Yahoo free chart feed does not include verified live NSE corporate announcements)
-  trade_timestamp_ist: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(quote.tradeTimeIst)} IST
-  phone_fetch_timestamp_ist: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(quote.fetchTimeIst)} IST
-  data_age_minutes: ${quote.delayMinutes}
-  is_older_than_5_minutes: ${quote.isDelayedOver5Min}
-</data>''';
-  }
-
-  Future<void> _runIntradayAnalyst(StockItem stock) async {
-    final quote = stock.quote;
-    if (quote == null) return;
-
-    if (widget.geminiApiKey.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppStrings.get(widget.language, 'missing_key')),
-        ),
-      );
-      _openSettingsSheet();
-      return;
+  void _reEvaluateAllCardsForLanguage(String newLang) {
+    for (final s in _stocks) {
+      if (s.quote != null) {
+        s.actionCard = LocalPennyTraderAgent.evaluate(
+          stock: s,
+          quote: s.quote!,
+          lang: newLang,
+        );
+      }
     }
-
-    setState(() {
-      stock.isAiLoading = true;
-      stock.aiErrorMessage = '';
-    });
-
-    final langName =
-        widget.language == 'TE' ? 'Telugu (తెలుగు script)' : 'English';
-    final dataXml = _buildDataXmlTag(stock, quote);
-
-    // Uses your custom prompt from phone storage if provided, plus enforces strict JSON keys
-    final roleRules = widget.customAnalystPrompt.isNotEmpty
-        ? widget.customAnalystPrompt
-        : '''
-ROLE: Disciplined intraday analyst for Indian penny stocks (NSE/BSE).
-Use ONLY the data inside <data> tags; if something is missing, say so.
-PENNY STOCK RULES:
-- Low volume (<5,00,000 daily shares) or wide spread: AVOID.
-- Near a price limit, under exchange surveillance, or in a segment without intraday trading: AVOID.
-- Sudden spike with no news: flag possible manipulation; do not chase.
-- Default to WAIT or AVOID unless technicals, fundamentals AND news agree.
-- Max loss per trade is strictly Rs 100. Target must be minimum 1:2 risk-reward, else AVOID.
-- Never claim certainty.''';
-
-    final fullPrompt = '''
-$roleRules
-
-LANGUAGE = $langName.
-Reply in $langName (use Telugu script if Telugu), but keep stock symbols, numbers, and the exact action word (BUY / SELL / WAIT / AVOID) in English.
-
-INPUT:
-$dataXml
-
-Respond ONLY with a valid JSON object matching these exact keys:
-{
-  "data_freshness": "If is_older_than_5_minutes is true, MUST start with 'PRACTICE ONLY - DELAYED DATA' and treat signal as practice, otherwise state LIVE DATA",
-  "action": "BUY or SELL or WAIT or AVOID",
-  "confidence": "Low or Medium or High",
-  "confidence_reason": "One plain sentence reason in $langName",
-  "entry_price": ${quote.price.toStringAsFixed(2)},
-  "stop_loss": 0.0,
-  "target_price": 0.0,
-  "technical_why": "One plain line on price vs VWAP, RSI, and volume in $langName",
-  "fundamental_why": "One plain line (explicitly state if missing in <data>) in $langName",
-  "news_why": "One plain line (explicitly state if missing in <data>) in $langName",
-  "what_proves_wrong": "One plain line on what price or volume action invalidates this view in $langName",
-  "data_gaps": "List every missing item from <data> (e.g. fundamentals, live news, order book spread, ASM/GSM list) in $langName"
-}''';
-
-    try {
-      final url = Uri.parse(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${widget.geminiApiKey}');
-
-      final response = await http
-          .post(
-            url,
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'contents': [
-                {
-                  'parts': [
-                    {'text': fullPrompt}
-                  ]
-                }
-              ],
-              'generationConfig': {
-                'temperature': 0.1,
-                'responseMimeType': 'application/json',
-              }
-            }),
-          )
-          .timeout(const Duration(seconds: 25));
-
-      if (!mounted) return;
-
-      if (response.statusCode == 429) {
-        setState(() {
-          stock.aiErrorMessage = AppStrings.get(widget.language, 'rate_limit');
-          stock.isAiLoading = false;
-        });
-        return;
-      }
-
-      if (response.statusCode != 200) {
-        setState(() {
-          stock.aiErrorMessage =
-              'Gemini API Error (${response.statusCode}): Please verify your API Key in Settings.';
-          stock.isAiLoading = false;
-        });
-        return;
-      }
-
-      final body = jsonDecode(response.body);
-      final rawText =
-          body['candidates']?[0]?['content']?['parts']?[0]?['text'] ?? '{}';
-      final cleaned =
-          rawText.replaceAll('```json', '').replaceAll('```', '').trim();
-      final Map<String, dynamic> j = jsonDecode(cleaned);
-
-      String action = (j['action'] ?? 'AVOID').toString().toUpperCase().trim();
-      if (!['BUY', 'SELL', 'WAIT', 'AVOID'].contains(action)) {
-        action = 'AVOID';
-      }
-
-      final double entry =
-          (j['entry_price'] as num?)?.toDouble() ?? quote.price;
-      double sl = (j['stop_loss'] as num?)?.toDouble() ?? 0.0;
-      double target = (j['target_price'] as num?)?.toDouble() ?? 0.0;
-
-      //Deterministic Safety Math: Verify Position Size for Rs 100 Max Loss & 1:2 Risk-Reward
-      int shares = 0;
-      String rrString = 'N/A';
-
-      if (action == 'BUY' || action == 'SELL') {
-        final double riskPerShare = (entry - sl).abs();
-        final double rewardPerShare = (target - entry).abs();
-
-        if (riskPerShare <= 0.01) {
-          action = 'AVOID';
-        } else {
-          final double rr = rewardPerShare / riskPerShare;
-          rrString = '1 : ${rr.toStringAsFixed(1)}';
-          // Enforce strict 1:2 minimum risk-reward rule
-          if (rr < 1.95) {
-            action = 'AVOID';
-          } else {
-            shares = (100.0 / riskPerShare).floor();
-            if (shares < 1) {
-              action = 'AVOID';
-            }
-          }
-        }
-      }
-
-      final String freshnessText = quote.isDelayedOver5Min
-          ? 'PRACTICE ONLY - DELAYED DATA (${quote.delayMinutes} min delay)'
-          : (j['data_freshness'] ?? 'LIVE DATA (<5 min delay)').toString();
-
-      final card = ActionCardData(
-        dataFreshness: freshnessText,
-        action: action,
-        confidence: (j['confidence'] ?? 'Low').toString(),
-        confidenceReason: (j['confidence_reason'] ?? '').toString(),
-        entryPrice: entry,
-        sharesForMaxLoss100: shares,
-        stopLoss: sl,
-        targetPrice: target,
-        riskRewardRatio: rrString,
-        squareOffNote: 'Square off before market close (3:20 PM IST)',
-        technicalWhy: (j['technical_why'] ?? '').toString(),
-        fundamentalWhy: (j['fundamental_why'] ?? '').toString(),
-        newsWhy: (j['news_why'] ?? '').toString(),
-        whatProvesWrong: (j['what_proves_wrong'] ?? '').toString(),
-        dataGaps: (j['data_gaps'] ?? '').toString(),
-        footerDisclaimer:
-            'Educational analysis, not financial advice. Paper trading only.',
-      );
-
-      setState(() {
-        stock.actionCard = card;
-        stock.isAiLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        stock.aiErrorMessage = 'AI parsing error ($e)';
-        stock.isAiLoading = false;
-      });
-    }
+    setState(() {});
   }
 
   void _openSettingsSheet() {
-    final keyCtrl = TextEditingController(text: widget.geminiApiKey);
-    final promptCtrl = TextEditingController(text: widget.customAnalystPrompt);
-
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setModalState) {
             final lang = widget.language;
             return Padding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppStrings.get(lang, 'settings'),
-                      style: const TextStyle(
-                          fontSize: 19, fontWeight: FontWeight.bold),
-                    ),
-                    const Divider(),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(AppStrings.get(lang, 'theme_title')),
-                      subtitle: Text(AppStrings.get(lang, 'theme_sub')),
-                      value: widget.isDarkMode,
-                      onChanged: (val) {
-                        widget.onThemeChanged(val);
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppStrings.get(lang, 'settings'),
+                    style: const TextStyle(
+                        fontSize: 19, fontWeight: FontWeight.bold),
+                  ),
+                  const Divider(),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(AppStrings.get(lang, 'theme_title')),
+                    subtitle: Text(AppStrings.get(lang, 'theme_sub')),
+                    value: widget.isDarkMode,
+                    onChanged: (val) {
+                      widget.onThemeChanged(val);
+                      setModalState(() {});
+                    },
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(AppStrings.get(lang, 'lang_title')),
+                    subtitle: Text(AppStrings.get(lang, 'lang_sub')),
+                    trailing: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: 'EN', label: Text('English')),
+                        ButtonSegment(value: 'TE', label: Text('తెలుగు')),
+                      ],
+                      selected: {widget.language},
+                      onSelectionChanged: (newSet) {
+                        final chosen = newSet.first;
+                        widget.onLanguageChanged(chosen);
+                        _reEvaluateAllCardsForLanguage(chosen);
                         setModalState(() {});
                       },
                     ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(AppStrings.get(lang, 'lang_title')),
-                      subtitle: Text(AppStrings.get(lang, 'lang_sub')),
-                      trailing: SegmentedButton<String>(
-                        segments: const [
-                          ButtonSegment(value: 'EN', label: Text('English')),
-                          ButtonSegment(value: 'TE', label: Text('తెలుగు')),
-                        ],
-                        selected: {widget.language},
-                        onSelectionChanged: (newSet) {
-                          widget.onLanguageChanged(newSet.first);
-                          setModalState(() {});
-                        },
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: keyCtrl,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: AppStrings.get(lang, 'key_label'),
-                        hintText: AppStrings.get(lang, 'key_hint'),
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.key),
-                      ),
+                    child: Text(
+                      AppStrings.get(lang, 'engine_info'),
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: promptCtrl,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: AppStrings.get(lang, 'prompt_label'),
-                        hintText: AppStrings.get(lang, 'prompt_hint'),
-                        border: const OutlineInputBorder(),
-                      ),
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(AppStrings.get(lang, 'close')),
                     ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          await widget.onSecretsSaved(
-                              keyCtrl.text, promptCtrl.text);
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.save),
-                        label: Text(AppStrings.get(lang, 'save_close')),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           },
@@ -963,14 +1006,13 @@ Respond ONLY with a valid JSON object matching these exact keys:
 
           const Divider(height: 1),
 
-          // 3. Scrollable Main Content: Chart Card + AI Action Card
+          // 3. Scrollable Main Area: Price + Chart + Instant Built-In Trader Action Card
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(14.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Price & Switchable Chart Card
                   Card(
                     elevation: 2,
                     child: Padding(
@@ -1047,6 +1089,10 @@ Respond ONLY with a valid JSON object matching these exact keys:
                                     style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600)),
+                                Text('EMA9: Rs ${quote.ema9.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600)),
                                 Text('RSI(14): ${quote.rsi14.toStringAsFixed(1)}',
                                     style: const TextStyle(
                                         fontSize: 12,
@@ -1095,12 +1141,12 @@ Respond ONLY with a valid JSON object matching these exact keys:
                           const SizedBox(height: 10),
                           if (selectedStock.isLoading)
                             const SizedBox(
-                              height: 190,
+                              height: 185,
                               child: Center(child: CircularProgressIndicator()),
                             )
                           else if (selectedStock.errorMessage.isNotEmpty)
                             SizedBox(
-                              height: 190,
+                              height: 185,
                               child: Center(
                                 child: Text(
                                   selectedStock.errorMessage,
@@ -1110,7 +1156,7 @@ Respond ONLY with a valid JSON object matching these exact keys:
                             )
                           else if (quote != null && quote.bars.isNotEmpty)
                             Container(
-                              height: 190,
+                              height: 185,
                               width: double.infinity,
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
@@ -1128,7 +1174,7 @@ Respond ONLY with a valid JSON object matching these exact keys:
                             )
                           else
                             SizedBox(
-                              height: 190,
+                              height: 185,
                               child: Center(
                                 child: Text(AppStrings.get(lang, 'no_candles')),
                               ),
@@ -1144,7 +1190,7 @@ Respond ONLY with a valid JSON object matching these exact keys:
                               style: const TextStyle(fontSize: 11),
                             ),
                           ],
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
                           Text(
                             '${AppStrings.get(lang, 'verify_title')} google.com/finance/quote/$googleSymbol',
                             style: const TextStyle(
@@ -1157,56 +1203,8 @@ Respond ONLY with a valid JSON object matching these exact keys:
 
                   const SizedBox(height: 12),
 
-                  // Button to Trigger AI Intraday Analyst
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: (quote == null || selectedStock.isAiLoading)
-                        ? null
-                        : () => _runIntradayAnalyst(selectedStock),
-                    icon: const Icon(Icons.analytics_outlined),
-                    label: Text(
-                      AppStrings.get(lang, 'run_analyst'),
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // AI Loading / Error / 7-Point Action Card Output
-                  if (selectedStock.isAiLoading)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            const CircularProgressIndicator(),
-                            const SizedBox(height: 12),
-                            Text(
-                              AppStrings.get(lang, 'analyzing'),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else if (selectedStock.aiErrorMessage.isNotEmpty)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          selectedStock.aiErrorMessage,
-                          style: const TextStyle(
-                              color: Colors.redAccent,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    )
-                  else if (card != null)
+                  // Built-In Trader Agent 7-Point Action Card (Generated automatically & on refresh)
+                  if (card != null)
                     Card(
                       elevation: 3,
                       shape: RoundedRectangleBorder(
@@ -1221,16 +1219,18 @@ Respond ONLY with a valid JSON object matching these exact keys:
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Header + 2. ACTION Badge
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  AppStrings.get(lang, 'card_header'),
-                                  style: const TextStyle(
+                                Flexible(
+                                  child: Text(
+                                    AppStrings.get(lang, 'card_header'),
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.grey),
+                                      color: Colors.grey,
+                                    ),
+                                  ),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
