@@ -1,5 +1,14 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 // ============================================================================
-// === EASY CUSTOMIZATION CONFIG ===
+// === EASY CUSTOMIZATION CONFIG (Modify here or give to Claude) ===
 // ============================================================================
 const double kVirtualCapital = 10000.0;
 const double kMaxRiskPerTrade = 100.0;
@@ -16,15 +25,6 @@ final List> kDefaultWatchlist = [
   {'symbol': 'GTLINFRA.NS', 'name': 'GTL Infrastructure Ltd'},
 ];
 // ============================================================================
-
-import 'dart:async';
-import 'dart:convert';
-import 'dart:math' as math;
-import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const PennyTraderApp());
@@ -1506,7 +1506,7 @@ class _Stage5ScreenState extends State<Stage5Screen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
