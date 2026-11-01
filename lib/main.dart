@@ -547,6 +547,7 @@ class _PennyTraderAppState extends State<PennyTraderApp>
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+  builder: (context, child) => TraderAiOverlayWrapper(child: child!),
       title: 'Penny Stock Trader',
       debugShowCheckedModeBanner: false,
       themeMode: _darkOverride == null
