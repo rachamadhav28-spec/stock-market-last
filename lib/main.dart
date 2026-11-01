@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,19 +17,345 @@ const double kMaxRiskPerTrade = 100.0;
 const double kMaxTotalOpenRisk = 300.0;
 const double kMinSafeVolume = 500000;
 const double kMinPennyPrice = 2.0;
-const double kMaxPennyPrice = 20.0;
+const double kMaxPennyPrice = 70.0;
+// Background scanner: full watchlist sweep interval, and live refresh of the
+// stock currently open on screen.
+const int kSweepIntervalSeconds = 180;
+const int kSelectedRefreshSeconds = 2;
+const String kSignalChannelId = 'signals_high_conf';
+const String kServiceChannelId = 'scanner_fg';
 
+// 94 stocks. Symbols are Yahoo Finance tickers; any ticker that fails to load
+// is auto-resolved by company name at runtime (see ScanEngine.fetchWithFallback).
 final List<Map<String, String>> kDefaultWatchlist = [
-  {'symbol': 'IDEA.NS', 'name': 'Vodafone Idea Ltd'},
-  {'symbol': 'YESBANK.NS', 'name': 'Yes Bank Ltd'},
-  {'symbol': 'JPPOWER.NS', 'name': 'Jaiprakash Power Ventures'},
-  {'symbol': 'RPOWER.NS', 'name': 'Reliance Power Ltd'},
-  {'symbol': 'GTLINFRA.NS', 'name': 'GTL Infrastructure Ltd'},
+  {'symbol': '3IINFOTECH.NS', 'name': '3i Infotech'},
+  {'symbol': 'ADDSHOP.NS', 'name': 'Add-Shop E-Retail'},
+  {'symbol': 'ALMONDZ.NS', 'name': 'Almondz Global Securities'},
+  {'symbol': 'ANLON.NS', 'name': 'Anlon Healthcare'},
+  {'symbol': 'ARDEE.NS', 'name': 'Ardee Industries'},
+  {'symbol': 'ARSHIYA.NS', 'name': 'Arshiya'},
+  {'symbol': 'AVANCE.NS', 'name': 'Avance Technologies'},
+  {'symbol': 'BLUECLOUDS.NS', 'name': 'Blue Cloud Softech'},
+  {'symbol': 'BCG.NS', 'name': 'Brightcom Group'},
+  {'symbol': 'CELEBRITY.NS', 'name': 'Celebrity Fashions'},
+  {'symbol': 'CENTRALBK.NS', 'name': 'Central Bank of India'},
+  {'symbol': 'DCW.NS', 'name': 'DCW'},
+  {'symbol': 'DIPNA.NS', 'name': 'Dipna Pharmachem'},
+  {'symbol': 'DOLPHIN.NS', 'name': 'Dolphin Kitchen Utensils'},
+  {'symbol': 'DRCSYSTEMS.NS', 'name': 'DRC Systems'},
+  {'symbol': 'ECONO.NS', 'name': 'Econo Trade India'},
+  {'symbol': 'ELITECON.NS', 'name': 'Elitecon International'},
+  {'symbol': 'FILATFASH.NS', 'name': 'Filatex Fashions'},
+  {'symbol': 'FCL.NS', 'name': 'Fineotex Chem'},
+  {'symbol': 'FISCHER.NS', 'name': 'Fischer Medical'},
+  {'symbol': 'GAJANAND.NS', 'name': 'Gajanand International'},
+  {'symbol': 'GDL.NS', 'name': 'Gateway Distriparks'},
+  {'symbol': 'GEEKAYWIRE.NS', 'name': 'Geekay Wires'},
+  {'symbol': 'GEMSTONE.NS', 'name': 'Gemstone Investments'},
+  {'symbol': 'GEOJITFSL.NS', 'name': 'Geojit Financial Services'},
+  {'symbol': 'GSS.NS', 'name': 'GSS Infotech'},
+  {'symbol': 'GUJLEASE.NS', 'name': 'Gujarat Lease Financing'},
+  {'symbol': 'GUJTLRM.NS', 'name': 'Gujarat Toolroom'},
+  {'symbol': 'HCC.NS', 'name': 'Hindustan Construction'},
+  {'symbol': 'HMAAGRO.NS', 'name': 'HMA Agro Industries'},
+  {'symbol': 'HORIZON.NS', 'name': 'Horizon Industrial Parks'},
+  {'symbol': 'HPAL.NS', 'name': 'HP Adhesives'},
+  {'symbol': 'IOB.NS', 'name': 'Indian Overseas Bank'},
+  {'symbol': 'EMBDL.NS', 'name': 'Indiabulls Real Estate'},
+  {'symbol': 'INDOTHAI.NS', 'name': 'Indo Thai Securities'},
+  {'symbol': 'INOXWIND.NS', 'name': 'Inox Wind'},
+  {'symbol': 'IRB.NS', 'name': 'IRB Infrastructure'},
+  {'symbol': 'JAIBALAJI.NS', 'name': 'Jai Balaji Industries'},
+  {'symbol': 'JPPOWER.NS', 'name': 'Jaiprakash Power'},
+  {'symbol': 'JETFREIGHT.NS', 'name': 'Jet Freight Logistics'},
+  {'symbol': 'JONJUA.NS', 'name': 'Jonjua Overseas'},
+  {'symbol': 'LLOYDSENT.NS', 'name': 'Lloyds Enterprises'},
+  {'symbol': 'MCLOUD.NS', 'name': 'Magellanic Cloud'},
+  {'symbol': 'MISHTANN.NS', 'name': 'Mishtann Foods'},
+  {'symbol': 'MSUMI.NS', 'name': 'Motherson Wiring'},
+  {'symbol': 'MOTISONS.NS', 'name': 'Motisons Jewellers'},
+  {'symbol': 'NAVKARURB.NS', 'name': 'Navkar Urbanstructure'},
+  {'symbol': 'NEIL.NS', 'name': 'Neil Industries'},
+  {'symbol': 'NILASPACES.NS', 'name': 'Nila Spaces'},
+  {'symbol': 'NURTUREWELL.NS', 'name': 'Nurture Well Industries'},
+  {'symbol': 'GREENPOWER.NS', 'name': 'Orient Green Power'},
+  {'symbol': 'OSIAHYPER.NS', 'name': 'Osia Hyper Retail'},
+  {'symbol': 'PARLE.NS', 'name': 'Parle Industries'},
+  {'symbol': 'PATELENG.NS', 'name': 'Patel Engineering'},
+  {'symbol': 'PCJEWELLER.NS', 'name': 'PC Jeweller'},
+  {'symbol': 'PRAXIS.NS', 'name': 'Praxis Home Retail'},
+  {'symbol': 'PFS.NS', 'name': 'PTC India Fin'},
+  {'symbol': 'PSB.NS', 'name': 'Punjab & Sind Bank'},
+  {'symbol': 'RAJOOENG.NS', 'name': 'Rajoo Engineers'},
+  {'symbol': 'RELINFRA.NS', 'name': 'Reliance Infrastructure'},
+  {'symbol': 'RPOWER.NS', 'name': 'Reliance Power'},
+  {'symbol': 'REMEDIUM.NS', 'name': 'Remedium Life'},
+  {'symbol': 'RHETAN.NS', 'name': 'Rhetan TMT'},
+  {'symbol': 'ROTOPUMP.NS', 'name': 'Roto Pumps'},
+  {'symbol': 'SABAR.NS', 'name': 'Sabar Flex India'},
+  {'symbol': 'SAGILITY.NS', 'name': 'Sagility'},
+  {'symbol': 'SAMEERA.NS', 'name': 'Sameera Agro'},
+  {'symbol': 'SARASWATI.NS', 'name': 'Saraswati Saree Depot'},
+  {'symbol': 'SBC.NS', 'name': 'SBC Exports'},
+  {'symbol': 'SHANGAR.NS', 'name': 'Shangar Decor'},
+  {'symbol': 'SHREERAMA.NS', 'name': 'Shree Rama Multi-Tech'},
+  {'symbol': 'SIGMASOLVE.NS', 'name': 'Sigma Solve'},
+  {'symbol': 'SRMENERGY.NS', 'name': 'SRM Energy'},
+  {'symbol': 'STANCAP.NS', 'name': 'Standard Capital Markets'},
+  {'symbol': 'STEELXIND.NS', 'name': 'Steel Exchange'},
+  {'symbol': 'SUZLON.NS', 'name': 'Suzlon Energy'},
+  {'symbol': 'SYLPH.NS', 'name': 'Sylph Industries'},
+  {'symbol': 'SYNCOMF.NS', 'name': 'Syncom Formulations'},
+  {'symbol': 'TTML.NS', 'name': 'Tata Tele. Maharashtra'},
+  {'symbol': 'THINKINK.NS', 'name': 'Thinkink Picture'},
+  {'symbol': 'TIJARIA.NS', 'name': 'Tijaria Polypipes'},
+  {'symbol': 'TRIDENT.NS', 'name': 'Trident'},
+  {'symbol': 'UCOBANK.NS', 'name': 'UCO Bank'},
+  {'symbol': 'UNISON.NS', 'name': 'Unison Metals'},
+  {'symbol': 'UVDHL.NS', 'name': 'United Van Der Horst'},
+  {'symbol': 'VBIND.NS', 'name': 'V B Industries'},
+  {'symbol': 'VEDANTAPOWER.NS', 'name': 'Vedanta Power'},
+  {'symbol': 'VINNY.NS', 'name': 'Vinny Overseas'},
+  {'symbol': 'IDEA.NS', 'name': 'Vodafone Idea'},
+  {'symbol': 'WEBELSOLAR.NS', 'name': 'Websol Energy System'},
+  {'symbol': 'WHITEORG.NS', 'name': 'White Organic'},
+  {'symbol': 'XTGLOBAL.NS', 'name': 'XTGlobal Infotech'},
+  {'symbol': 'YESBANK.NS', 'name': 'Yes Bank'},
+  {'symbol': 'ZODIAC.NS', 'name': 'Zodiac Ventures'},
 ];
 // ============================================================================
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await NotificationService.init(requestPermission: true);
+    await configureScannerService();
+  } catch (_) {
+    // Notifications / background service are optional; the app still runs.
+  }
   runApp(const PennyTraderApp());
+}
+
+// ============================================================================
+// === MARKET HOURS (IST) ===
+// ============================================================================
+DateTime nowIst() =>
+    DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+
+bool isIndianMarketOpenNow() {
+  final t = nowIst();
+  if (t.weekday == DateTime.saturday || t.weekday == DateTime.sunday) {
+    return false;
+  }
+  final minutes = t.hour * 60 + t.minute;
+  return minutes >= 9 * 60 + 15 && minutes <= 15 * 60 + 30;
+}
+
+/// True once today's session is over (or it is a weekend) - the background
+/// service uses this to shut itself down.
+bool isPastMarketCloseOrWeekend() {
+  final t = nowIst();
+  if (t.weekday == DateTime.saturday || t.weekday == DateTime.sunday) {
+    return true;
+  }
+  return t.hour * 60 + t.minute > 15 * 60 + 30;
+}
+
+// ============================================================================
+// === LOCAL NOTIFICATIONS ===
+// ============================================================================
+class NotificationService {
+  static final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
+  static bool _ready = false;
+
+  static Future<void> init({bool requestPermission = false}) async {
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    if (!_ready) {
+      const initSettings = InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      );
+      await _plugin.initialize(initSettings);
+      await android?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          kSignalChannelId,
+          'High-confidence signals',
+          description: 'Alerts when a stock hits a High-Confidence BUY or SELL',
+          importance: Importance.high,
+        ),
+      );
+      await android?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          kServiceChannelId,
+          'Scanner service',
+          description: 'Background watchlist scanner status',
+          importance: Importance.low,
+        ),
+      );
+      _ready = true;
+    }
+    if (requestPermission) {
+      await android?.requestNotificationsPermission();
+    }
+  }
+
+  /// Sends a notification when [card] is a High-Confidence BUY or SELL, during
+  /// market hours, at most once per stock per action per day.
+  static Future<void> maybeNotify(StockItem stock, ActionCardData card) async {
+    final bool isActionable = card.action == 'BUY' || card.action == 'SELL';
+    if (!isActionable || card.confidence != 'High') return;
+    if (!isIndianMarketOpenNow()) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+    final today = DateFormat('yyyy-MM-dd').format(nowIst());
+    final marker = '$today|${card.action}';
+    final key = 'notified_${stock.name}';
+    if (prefs.getString(key) == marker) return;
+    await prefs.setString(key, marker);
+
+    await init();
+    final body =
+        'High-confidence ${card.action} at Rs ${card.entryPrice.toStringAsFixed(2)}'
+        ' | Stop Rs ${card.stopLoss.toStringAsFixed(2)}'
+        ' | Target Rs ${card.targetPrice.toStringAsFixed(2)}'
+        ' | R:R ${card.riskRewardRatio}';
+    await _plugin.show(
+      stock.name.hashCode & 0x7fffffff,
+      '${card.action}: ${stock.name}',
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          kSignalChannelId,
+          'High-confidence signals',
+          channelDescription:
+              'Alerts when a stock hits a High-Confidence BUY or SELL',
+          importance: Importance.high,
+          priority: Priority.high,
+          styleInformation: BigTextStyleInformation(body),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// === SCAN ENGINE (shared by the in-app timer and the background service) ===
+// ============================================================================
+class ScanEngine {
+  /// Fetches a quote; if the ticker fails, looks the company up by name once,
+  /// switches to the ticker it finds, and retries.
+  static Future<StockQuote> fetchWithFallback(
+      YahooDataProvider provider, StockItem stock) async {
+    try {
+      return await provider.fetchQuoteAndChart(stock.symbol);
+    } catch (_) {
+      if (stock.symbolResolveTried) rethrow;
+      stock.symbolResolveTried = true;
+      final alt = await provider.resolveSymbol(stock.name);
+      if (alt == null || alt == stock.symbol) rethrow;
+      final quote = await provider.fetchQuoteAndChart(alt);
+      stock.symbol = alt;
+      return quote;
+    }
+  }
+
+  /// Fetch + evaluate one stock and store the result on it.
+  static Future<ActionCardData> scanOne(
+      YahooDataProvider provider, StockItem stock, String lang) async {
+    final quote = await fetchWithFallback(provider, stock);
+    final card =
+        LocalPennyTraderAgent.evaluate(stock: stock, quote: quote, lang: lang);
+    stock.quote = quote;
+    stock.actionCard = card;
+    return card;
+  }
+
+  /// Runs [task] over every stock in small parallel batches so a full sweep of
+  /// the watchlist stays well inside the 3-minute window.
+  static Future<void> runInBatches(
+    List<StockItem> stocks,
+    Future<void> Function(StockItem stock) task, {
+    int batchSize = 6,
+  }) async {
+    for (var i = 0; i < stocks.length; i += batchSize) {
+      final end = math.min(i + batchSize, stocks.length);
+      await Future.wait(stocks.sublist(i, end).map((s) => task(s)));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+  }
+}
+
+// ============================================================================
+// === BACKGROUND SERVICE (keeps scanning when the app is not on screen) ===
+// ============================================================================
+Future<void> configureScannerService() async {
+  final service = FlutterBackgroundService();
+  await service.configure(
+    androidConfiguration: AndroidConfiguration(
+      onStart: onScannerServiceStart,
+      autoStart: false,
+      isForegroundMode: true,
+      notificationChannelId: kServiceChannelId,
+      initialNotificationTitle: 'Penny Trader scanner',
+      initialNotificationContent:
+          'Scanning your watchlist every 3 minutes during market hours',
+      foregroundServiceNotificationId: 8801,
+      foregroundServiceTypes: [AndroidForegroundType.dataSync],
+    ),
+    iosConfiguration: IosConfiguration(autoStart: false),
+  );
+}
+
+@pragma('vm:entry-point')
+Future<void> onScannerServiceStart(ServiceInstance service) async {
+  ui.DartPluginRegistrant.ensureInitialized();
+  await NotificationService.init();
+
+  final provider = YahooDataProvider();
+  final stocks = kDefaultWatchlist
+      .map((w) => StockItem(symbol: w['symbol']!, name: w['name']!))
+      .toList();
+  bool busy = false;
+
+  service.on('stopService').listen((_) => service.stopSelf());
+
+  Future<void> cycle() async {
+    if (isPastMarketCloseOrWeekend()) {
+      service.stopSelf();
+      return;
+    }
+    if (busy || !isIndianMarketOpenNow()) return;
+    busy = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+      final lang = prefs.getString('app_lang') ?? 'EN';
+      await ScanEngine.runInBatches(stocks, (stock) async {
+        try {
+          final card = await ScanEngine.scanOne(provider, stock, lang);
+          await NotificationService.maybeNotify(stock, card);
+        } catch (_) {
+          // One bad ticker must not stop the sweep.
+        }
+      });
+      if (service is AndroidServiceInstance) {
+        service.setForegroundNotificationInfo(
+          title: 'Penny Trader scanner',
+          content:
+              'Last full scan ${DateFormat('hh:mm a').format(nowIst())} IST - ${stocks.length} stocks',
+        );
+      }
+    } finally {
+      busy = false;
+    }
+  }
+
+  await cycle();
+  Timer.periodic(const Duration(seconds: kSweepIntervalSeconds), (_) {
+    cycle();
+  });
 }
 
 class PennyTraderApp extends StatefulWidget {
@@ -457,6 +785,43 @@ abstract class MarketDataProvider {
 class YahooDataProvider implements MarketDataProvider {
   @override
   String get providerName => 'Yahoo Finance JSON (5m Intraday)';
+
+  /// Looks a company up by name and returns its NSE (.NS) or BSE (.BO) ticker.
+  /// The match is only accepted if Yahoo's company name contains the first word
+  /// of ours, so a wrong company is not silently picked up.
+  Future<String?> resolveSymbol(String companyName) async {
+    final url = Uri.parse(
+        'https://query1.finance.yahoo.com/v1/finance/search?q=${Uri.encodeQueryComponent(companyName)}&quotesCount=10&newsCount=0');
+    final response = await http.get(
+      url,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36',
+      },
+    ).timeout(const Duration(seconds: 10));
+    if (response.statusCode != 200) return null;
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map) return null;
+    final quotes = decoded['quotes'];
+    if (quotes is! List) return null;
+
+    final firstWord = companyName.toLowerCase().split(' ').first;
+    for (final suffix in const ['.NS', '.BO']) {
+      for (final q in quotes) {
+        if (q is! Map) continue;
+        final sym = (q['symbol'] ?? '').toString();
+        final type = (q['quoteType'] ?? '').toString();
+        final label =
+            (q['shortname'] ?? q['longname'] ?? '').toString().toLowerCase();
+        if (type == 'EQUITY' &&
+            sym.endsWith(suffix) &&
+            label.contains(firstWord)) {
+          return sym;
+        }
+      }
+    }
+    return null;
+  }
 
   @override
   Future<StockQuote> fetchQuoteAndChart(String symbol) async {
@@ -946,7 +1311,7 @@ class LocalPennyTraderAgent {
       confidence = 'Medium';
       confidenceReason = isTE
           ? 'ధర Rs ${quote.price.toStringAsFixed(2)} పెన్నీ స్టాక్ పరిధిలో లేదు.'
-          : 'Price Rs ${quote.price.toStringAsFixed(2)} is outside Rs 2–Rs 20 penny range.';
+          : 'Price Rs ${quote.price.toStringAsFixed(2)} is outside Rs ${kMinPennyPrice.toStringAsFixed(0)}–Rs ${kMaxPennyPrice.toStringAsFixed(0)} penny range.';
     } else if (bullishIndicators && rrRatio >= 2.0 && finalShares >= 1) {
       action = 'BUY';
       confidence = quote.volumeSpikeRatio >= 1.2 ? 'High' : 'Medium';
@@ -1084,8 +1449,9 @@ class LocalPennyTraderAgent {
 }
 
 class StockItem {
-  final String symbol;
+  String symbol;
   final String name;
+  bool symbolResolveTried = false;
   StockQuote? quote;
   ActionCardData? actionCard;
   bool isLoading;
@@ -1119,8 +1485,9 @@ class Stage5Screen extends StatefulWidget {
   State<Stage5Screen> createState() => _Stage5ScreenState();
 }
 
-class _Stage5ScreenState extends State<Stage5Screen> {
-  final MarketDataProvider _dataProvider = YahooDataProvider();
+class _Stage5ScreenState extends State<Stage5Screen>
+    with WidgetsBindingObserver {
+  final YahooDataProvider _dataProvider = YahooDataProvider();
   late final List<StockItem> _stocks;
 
   int _selectedIndex = 0;
@@ -1128,6 +1495,9 @@ class _Stage5ScreenState extends State<Stage5Screen> {
   bool _isMarketOpen = false;
   bool _showCandlestick = true;
   Timer? _activeStockTimer;
+  Timer? _sweepTimer;
+  bool _sweepRunning = false;
+  bool _selectedFetching = false;
 
   List<PaperTradeRecord> _paperTrades = [];
   final List<ChatMessage> _chatMessages = [];
@@ -1139,13 +1509,33 @@ class _Stage5ScreenState extends State<Stage5Screen> {
     _stocks = kDefaultWatchlist
         .map((w) => StockItem(symbol: w['symbol']!, name: w['name']!))
         .toList();
+    WidgetsBinding.instance.addObserver(this);
     _loadSavedData();
     _initializeAndStartPolling();
   }
 
+  // App on screen -> in-app timers scan. App in background -> the foreground
+  // service takes over so alerts keep arriving with the screen off.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final service = FlutterBackgroundService();
+    if (state == AppLifecycleState.paused) {
+      if (!isPastMarketCloseOrWeekend()) {
+        service.startService().catchError((_) => false);
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      service.invoke('stopService');
+      if (_isMarketOpen) {
+        _sweepAll(showSpinner: false);
+      }
+    }
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _activeStockTimer?.cancel();
+    _sweepTimer?.cancel();
     _chatController.dispose();
     super.dispose();
   }
@@ -1179,40 +1569,57 @@ class _Stage5ScreenState extends State<Stage5Screen> {
     await prefs.setStringList('paper_trades_v5', rawList);
   }
 
-  bool _checkMarketHoursNow() {
-    final nowIst =
-        DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
-    if (nowIst.weekday == DateTime.saturday ||
-        nowIst.weekday == DateTime.sunday) {
-      return false;
-    }
-    final totalMinutes = nowIst.hour * 60 + nowIst.minute;
-    const marketOpen = 9 * 60 + 15;
-    const marketClose = 15 * 60 + 30;
-    return totalMinutes >= marketOpen && totalMinutes <= marketClose;
-  }
+  bool _checkMarketHoursNow() => isIndianMarketOpenNow();
 
   Future<void> _initializeAndStartPolling() async {
     setState(() {
       _isMarketOpen = _checkMarketHoursNow();
     });
 
-    for (final stock in _stocks) {
-      await _fetchSingleStock(stock, showSpinner: true);
-    }
-
     _activeStockTimer?.cancel();
-    _activeStockTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+    _sweepTimer?.cancel();
+
+    // The stock open on screen refreshes every few seconds.
+    _activeStockTimer =
+        Timer.periodic(const Duration(seconds: kSelectedRefreshSeconds), (_) async {
       final openNow = _checkMarketHoursNow();
       if (openNow != _isMarketOpen) {
         setState(() {
           _isMarketOpen = openNow;
         });
       }
-      if (_isMarketOpen) {
-        _fetchSingleStock(_stocks[_selectedIndex], showSpinner: false);
+      if (_isMarketOpen && !_selectedFetching) {
+        _selectedFetching = true;
+        try {
+          await _fetchSingleStock(_stocks[_selectedIndex], showSpinner: false);
+        } finally {
+          _selectedFetching = false;
+        }
       }
     });
+
+    // The whole watchlist is rotated through once every 3 minutes.
+    _sweepTimer =
+        Timer.periodic(const Duration(seconds: kSweepIntervalSeconds), (_) {
+      if (_isMarketOpen) {
+        _sweepAll(showSpinner: false);
+      }
+    });
+
+    await _sweepAll(showSpinner: true);
+  }
+
+  Future<void> _sweepAll({required bool showSpinner}) async {
+    if (_sweepRunning) return;
+    _sweepRunning = true;
+    try {
+      await ScanEngine.runInBatches(
+        _stocks,
+        (stock) => _fetchSingleStock(stock, showSpinner: showSpinner),
+      );
+    } finally {
+      _sweepRunning = false;
+    }
   }
 
   Future<void> _fetchSingleStock(StockItem stock,
@@ -1225,7 +1632,7 @@ class _Stage5ScreenState extends State<Stage5Screen> {
     }
 
     try {
-      final quote = await _dataProvider.fetchQuoteAndChart(stock.symbol);
+      final quote = await ScanEngine.fetchWithFallback(_dataProvider, stock);
       if (!mounted) return;
       final card = LocalPennyTraderAgent.evaluate(
         stock: stock,
@@ -1239,6 +1646,7 @@ class _Stage5ScreenState extends State<Stage5Screen> {
         stock.errorMessage = '';
       });
       _checkOpenPaperTradesAgainstPrice(stock.symbol, quote.price);
+      await NotificationService.maybeNotify(stock, card);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -1583,7 +1991,10 @@ class _Stage5ScreenState extends State<Stage5Screen> {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                 child: ChoiceChip(
-                  label: Text(_stocks[index].symbol.replaceAll('.NS', '')),
+                  label: Text(_stocks[index]
+                      .symbol
+                      .replaceAll('.NS', '')
+                      .replaceAll('.BO', '')),
                   selected: isSelected,
                   onSelected: (_) {
                     setState(() {

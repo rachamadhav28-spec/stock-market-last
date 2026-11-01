@@ -26,7 +26,7 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Scaffolding and Add Internet Permission
+      - name: Generate Android Scaffolding and Patch Permissions/Service
         run: |
           cp lib/main.dart /tmp/main.dart.bak
           cp pubspec.yaml /tmp/pubspec.yaml.bak
@@ -34,7 +34,7 @@ jobs:
           cp /tmp/main.dart.bak lib/main.dart
           cp /tmp/pubspec.yaml.bak pubspec.yaml
           rm -rf test
-          sed -i 's/<application/<uses-permission android:name="android.permission.INTERNET"\/>\n    <application/' android/app/src/main/AndroidManifest.xml
+          python3 .github/scripts/patch_android.py
 
       - name: Get packages
         run: flutter pub get
