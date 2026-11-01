@@ -430,7 +430,7 @@ class AppStrings {
     const Map<String, Map<String, String>> dict = {
       'EN': {
         'app_title': 'Penny Trader - Stage 5',
-        'market_open': 'NSE Market OPEN (9:15-3:30 IST) • 10s Live',
+        'market_open': 'NSE Market OPEN (9:15-3:30 IST) • 2s Live',
         'market_closed': 'Market CLOSED • Last Session Snapshot',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
         'ltp': 'Last Traded Price (NSE)',
@@ -1492,6 +1492,7 @@ class _Stage5ScreenState extends State<Stage5Screen>
 
   int _selectedIndex = 0;
   int _bottomTabIndex = 0;
+  bool _showStockDetail = false;
   bool _isMarketOpen = false;
   bool _showCandlestick = true;
   Timer? _activeStockTimer;
@@ -1588,7 +1589,7 @@ class _Stage5ScreenState extends State<Stage5Screen>
           _isMarketOpen = openNow;
         });
       }
-      if (_isMarketOpen && !_selectedFetching) {
+      if (_isMarketOpen && _showStockDetail && !_selectedFetching) {
         _selectedFetching = true;
         try {
           await _fetchSingleStock(_stocks[_selectedIndex], showSpinner: false);
@@ -1953,12 +1954,70 @@ class _Stage5ScreenState extends State<Stage5Screen>
     }
   }
 
-  Widget _buildLiveAndSignalsTab(String lang) {
-    final selectedStock = _stocks[_selectedIndex];
-    final quote = selectedStock.quote;
-    final card = selectedStock.actionCard;
-    final timeFormatter = DateFormat('dd MMM, hh:mm:ss a');
-    final googleSymbol = selectedStock.symbol.replaceAll('.NS', ':NSE');
+  // ---------------------------------------------------------------------------
+  // Starting screen: every stock, strongest signals first
+  // ---------------------------------------------------------------------------
+  int _signalTier(StockItem s) {
+    final c = s.actionCard;
+    if (c == null) return 4;
+    final bool actionable = c.action == 'BUY' || c.action == 'SELL';
+    if (actionable && c.confidence == 'High') return 0;
+    if (actionable) return 1;
+    if (c.action == 'WAIT') return 2;
+    return 3;
+  }
+
+  List<int> _rankedIndices() {
+    final idx = List<int>.generate(_stocks.length, (i) => i);
+    idx.sort((a, b) {
+      final ta = _signalTier(_stocks[a]);
+      final tb = _signalTier(_stocks[b]);
+      if (ta != tb) return ta.compareTo(tb);
+      final va = _stocks[a].quote?.volumeSpikeRatio ?? 0.0;
+      final vb = _stocks[b].quote?.volumeSpikeRatio ?? 0.0;
+      final byVolume = vb.compareTo(va);
+      if (byVolume != 0) return byVolume;
+      return _stocks[a].name.compareTo(_stocks[b].name);
+    });
+    return idx;
+  }
+
+  Color _signalColor(String action) {
+    switch (action) {
+      case 'BUY':
+        return Colors.green;
+      case 'SELL':
+        return Colors.red;
+      case 'WAIT':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  void _openStock(int index) {
+    setState(() {
+      _selectedIndex = index;
+      _bottomTabIndex = 0;
+      _showStockDetail = true;
+    });
+    _fetchSingleStock(_stocks[index], showSpinner: false);
+  }
+
+  Future<void> _openSearch() async {
+    final picked = await showSearch<int?>(
+      context: context,
+      delegate: _StockSearchDelegate(_stocks),
+    );
+    if (picked == null || !mounted) return;
+    _openStock(picked);
+  }
+
+  Widget _buildRankedHomeTab(String lang) {
+    final ranked = _rankedIndices();
+    final strongCount =
+        ranked.where((i) => _signalTier(_stocks[i]) == 0).length;
+    final scanned = _stocks.where((s) => s.actionCard != null).length;
 
     return Column(
       children: [
@@ -1980,30 +2039,162 @@ class _Stage5ScreenState extends State<Stage5Screen>
             ),
           ),
         ),
-        SizedBox(
-          height: 52,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            itemCount: _stocks.length,
-            itemBuilder: (context, index) {
-              final isSelected = index == _selectedIndex;
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                child: ChoiceChip(
-                  label: Text(_stocks[index]
-                      .symbol
-                      .replaceAll('.NS', '')
-                      .replaceAll('.BO', '')),
-                  selected: isSelected,
-                  onSelected: (_) {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-                  },
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Ranked by signal strength  •  $strongCount strong signals',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
+              ),
+              Text('$scanned/${_stocks.length} scanned',
+                  style: const TextStyle(fontSize: 12)),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: ListView.separated(
+            itemCount: ranked.length,
+            separatorBuilder: (context, i) => const Divider(height: 1),
+            itemBuilder: (context, pos) {
+              final index = ranked[pos];
+              final stock = _stocks[index];
+              final card = stock.actionCard;
+              final quote = stock.quote;
+              final tier = _signalTier(stock);
+              final bool actionable = tier <= 1;
+
+              String line1;
+              if (quote != null) {
+                final change = quote.previousClose > 0
+                    ? ((quote.price - quote.previousClose) /
+                            quote.previousClose) *
+                        100.0
+                    : 0.0;
+                line1 =
+                    'Rs ${quote.price.toStringAsFixed(2)}  (${change >= 0 ? '+' : ''}${change.toStringAsFixed(2)}%)';
+              } else if (stock.errorMessage.isNotEmpty) {
+                line1 = 'Could not load price';
+              } else {
+                line1 = 'Loading...';
+              }
+
+              String? line2;
+              if (card != null && actionable) {
+                final verb = card.action == 'BUY' ? 'Buy' : 'Sell';
+                line2 =
+                    '$verb near Rs ${card.entryPrice.toStringAsFixed(2)}  •  Stop Rs ${card.stopLoss.toStringAsFixed(2)}  •  Target Rs ${card.targetPrice.toStringAsFixed(2)}';
+              }
+
+              final color = card == null ? Colors.grey : _signalColor(card.action);
+
+              return ListTile(
+                onTap: () => _openStock(index),
+                leading: CircleAvatar(
+                  radius: 15,
+                  backgroundColor: color.withValues(alpha: 0.2),
+                  child: Text('${pos + 1}',
+                      style: TextStyle(fontSize: 12, color: color)),
+                ),
+                title: Text(
+                  stock.name,
+                  style: TextStyle(
+                      fontWeight:
+                          actionable ? FontWeight.bold : FontWeight.normal),
+                ),
+                subtitle: Text(line2 == null ? line1 : '$line1\n$line2'),
+                isThreeLine: line2 != null,
+                trailing: card == null
+                    ? (stock.isLoading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.error_outline, color: Colors.grey))
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              card.action,
+                              style: TextStyle(
+                                  color: color,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12),
+                            ),
+                          ),
+                          if (actionable)
+                            Text('${card.confidence} confidence',
+                                style: const TextStyle(fontSize: 10)),
+                        ],
+                      ),
               );
             },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLiveAndSignalsTab(String lang) {
+    final selectedStock = _stocks[_selectedIndex];
+    final quote = selectedStock.quote;
+    final card = selectedStock.actionCard;
+    final timeFormatter = DateFormat('dd MMM, hh:mm:ss a');
+    final googleSymbol = selectedStock.symbol
+        .replaceAll('.NS', ':NSE')
+        .replaceAll('.BO', ':BOM');
+
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          color: _isMarketOpen
+              ? Colors.green.withValues(alpha: 0.2)
+              : Colors.orange.withValues(alpha: 0.2),
+          child: Text(
+            _isMarketOpen
+                ? AppStrings.get(lang, 'market_open')
+                : AppStrings.get(lang, 'market_closed'),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              color: _isMarketOpen ? Colors.green : Colors.orange,
+            ),
+          ),
+        ),
+        InkWell(
+          onTap: () => setState(() => _showStockDetail = false),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                const Icon(Icons.arrow_back, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    selectedStock.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const Text('Back to ranked list',
+                    style: TextStyle(fontSize: 12)),
+              ],
+            ),
           ),
         ),
         const Divider(height: 1),
@@ -2765,14 +2956,39 @@ class _Stage5ScreenState extends State<Stage5Screen>
     final lang = widget.language;
     final selectedStock = _stocks[_selectedIndex];
 
-    return Scaffold(
+    final bool onDetail = _bottomTabIndex == 0 && _showStockDetail;
+
+    return PopScope(
+      canPop: !onDetail,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          setState(() => _showStockDetail = false);
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
+        leading: onDetail
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => setState(() => _showStockDetail = false),
+              )
+            : null,
         title: Text(AppStrings.get(lang, 'app_title')),
         actions: [
           IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'Search stocks by name',
+            onPressed: _openSearch,
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () =>
-                _fetchSingleStock(selectedStock, showSpinner: true),
+            onPressed: () {
+              if (_bottomTabIndex == 0 && !_showStockDetail) {
+                _sweepAll(showSpinner: false);
+              } else {
+                _fetchSingleStock(selectedStock, showSpinner: true);
+              }
+            },
           ),
           IconButton(
             icon: const Icon(Icons.settings),
@@ -2781,7 +2997,9 @@ class _Stage5ScreenState extends State<Stage5Screen>
         ],
       ),
       body: _bottomTabIndex == 0
-          ? _buildLiveAndSignalsTab(lang)
+          ? (_showStockDetail
+              ? _buildLiveAndSignalsTab(lang)
+              : _buildRankedHomeTab(lang))
           : (_bottomTabIndex == 1
               ? _buildResultsTab(lang)
               : _buildAiChatTab(lang)),
@@ -2807,6 +3025,72 @@ class _Stage5ScreenState extends State<Stage5Screen>
           ),
         ],
       ),
+    ),
+    );
+  }
+}
+
+/// Google-style name search: type "y" and every stock whose name starts with
+/// "y" is listed; each extra letter narrows it further.
+class _StockSearchDelegate extends SearchDelegate<int?> {
+  final List<StockItem> stocks;
+
+  _StockSearchDelegate(this.stocks)
+      : super(searchFieldLabel: 'Search stocks by name');
+
+  @override
+  List<Widget>? buildActions(BuildContext context) => [
+        if (query.isNotEmpty)
+          IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: () => query = '',
+          ),
+      ];
+
+  @override
+  Widget? buildLeading(BuildContext context) => IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => close(context, null),
+      );
+
+  @override
+  Widget buildResults(BuildContext context) => _matches(context);
+
+  @override
+  Widget buildSuggestions(BuildContext context) => _matches(context);
+
+  Widget _matches(BuildContext context) {
+    final q = query.trim().toLowerCase();
+    final found = <int>[];
+    for (var i = 0; i < stocks.length; i++) {
+      if (q.isEmpty || stocks[i].name.toLowerCase().startsWith(q)) {
+        found.add(i);
+      }
+    }
+    found.sort((a, b) =>
+        stocks[a].name.toLowerCase().compareTo(stocks[b].name.toLowerCase()));
+
+    if (found.isEmpty) {
+      return Center(child: Text('No stock name starts with "${query.trim()}"'));
+    }
+    return ListView.builder(
+      itemCount: found.length,
+      itemBuilder: (context, pos) {
+        final i = found[pos];
+        final stock = stocks[i];
+        final card = stock.actionCard;
+        final price = stock.quote == null
+            ? ''
+            : '  •  Rs ${stock.quote!.price.toStringAsFixed(2)}';
+        return ListTile(
+          leading: const Icon(Icons.search),
+          title: Text(stock.name),
+          subtitle: Text(
+              '${stock.symbol.replaceAll('.NS', '').replaceAll('.BO', '')}$price'),
+          trailing: card == null ? null : Text(card.action),
+          onTap: () => close(context, i),
+        );
+      },
     );
   }
 }
