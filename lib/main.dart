@@ -358,6 +358,129 @@ Future<void> onScannerServiceStart(ServiceInstance service) async {
   });
 }
 
+// ============================================================================
+// === APP THEME: clean, flat, white-and-green trading-app look ===
+// ============================================================================
+class AppTheme {
+  static const Color brandGreen = Color(0xFF00A97F);
+  static const Color gain = Color(0xFF00A97F);
+  static const Color loss = Color(0xFFE5484D);
+
+  static ThemeData light() => _build(Brightness.light);
+  static ThemeData dark() => _build(Brightness.dark);
+
+  static ThemeData _build(Brightness brightness) {
+    final bool isDark = brightness == Brightness.dark;
+    final Color bg = isDark ? const Color(0xFF0E1116) : Colors.white;
+    final Color surface =
+        isDark ? const Color(0xFF1A1E26) : const Color(0xFFF5F6F8);
+    final Color line =
+        isDark ? const Color(0xFF2A2F3A) : const Color(0xFFE9EBEE);
+    final Color text =
+        isDark ? const Color(0xFFEDEFF2) : const Color(0xFF1C1F26);
+
+    final scheme = ColorScheme.fromSeed(
+      seedColor: brandGreen,
+      brightness: brightness,
+    ).copyWith(
+      primary: brandGreen,
+      surface: bg,
+      onSurface: text,
+      error: loss,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: bg,
+      appBarTheme: AppBarTheme(
+        backgroundColor: bg,
+        foregroundColor: text,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: text,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: surface,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      dividerTheme: DividerThemeData(color: line, thickness: 1, space: 1),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: bg,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        height: 64,
+        indicatorColor: brandGreen.withValues(alpha: 0.14),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final bool selected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected ? brandGreen : text.withValues(alpha: 0.6),
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final bool selected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: selected ? brandGreen : text.withValues(alpha: 0.6),
+          );
+        }),
+      ),
+      chipTheme: ChipThemeData(
+        shape: const StadiumBorder(),
+        side: BorderSide(color: line),
+        backgroundColor: bg,
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: brandGreen,
+          foregroundColor: Colors.white,
+          minimumSize: const Size(0, 46),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: brandGreen,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          minimumSize: const Size(0, 46),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: text,
+          side: BorderSide(color: line),
+          minimumSize: const Size(0, 46),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+}
+
 class PennyTraderApp extends StatefulWidget {
   const PennyTraderApp({super.key});
 
@@ -365,20 +488,41 @@ class PennyTraderApp extends StatefulWidget {
   State<PennyTraderApp> createState() => _PennyTraderAppState();
 }
 
-class _PennyTraderAppState extends State<PennyTraderApp> {
-  bool _isDarkMode = true;
+class _PennyTraderAppState extends State<PennyTraderApp>
+    with WidgetsBindingObserver {
+  // null = follow the phone's light/dark setting.
+  bool? _darkOverride;
   String _language = 'EN';
+
+  bool get _isDarkMode =>
+      _darkOverride ??
+      (WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+          Brightness.dark);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSettings();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    if (_darkOverride == null) {
+      setState(() {});
+    }
   }
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _isDarkMode = prefs.getBool('dark_mode') ?? true;
+      _darkOverride = prefs.getBool('dark_mode');
       _language = prefs.getString('app_lang') ?? 'EN';
     });
   }
@@ -387,7 +531,7 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('dark_mode', isDark);
     setState(() {
-      _isDarkMode = isDark;
+      _darkOverride = isDark;
     });
   }
 
@@ -404,17 +548,11 @@ class _PennyTraderAppState extends State<PennyTraderApp> {
     return MaterialApp(
       title: 'Penny Stock Trader',
       debugShowCheckedModeBanner: false,
-      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        colorSchemeSeed: Colors.blue,
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        colorSchemeSeed: Colors.blue,
-        useMaterial3: true,
-      ),
+      themeMode: _darkOverride == null
+          ? ThemeMode.system
+          : (_darkOverride! ? ThemeMode.dark : ThemeMode.light),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
       home: Stage5Screen(
         isDarkMode: _isDarkMode,
         language: _language,
@@ -429,7 +567,7 @@ class AppStrings {
   static String get(String lang, String key) {
     const Map<String, Map<String, String>> dict = {
       'EN': {
-        'app_title': 'Penny Trader - Stage 5',
+        'app_title': 'Penny Trader',
         'market_open': 'NSE Market OPEN (9:15-3:30 IST) • 2s Live',
         'market_closed': 'Market CLOSED • Last Session Snapshot',
         'delayed_badge': 'PRACTICE ONLY - DELAYED DATA',
@@ -2013,6 +2151,35 @@ class _Stage5ScreenState extends State<Stage5Screen>
     _openStock(picked);
   }
 
+  Widget _marketStatusStrip(String lang) {
+    final Color c = _isMarketOpen ? AppTheme.gain : Colors.orange;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _isMarketOpen
+                  ? AppStrings.get(lang, 'market_open')
+                  : AppStrings.get(lang, 'market_closed'),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                color: c,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRankedHomeTab(String lang) {
     final ranked = _rankedIndices();
     final strongCount =
@@ -2021,44 +2188,58 @@ class _Stage5ScreenState extends State<Stage5Screen>
 
     return Column(
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          color: _isMarketOpen
-              ? Colors.green.withValues(alpha: 0.2)
-              : Colors.orange.withValues(alpha: 0.2),
-          child: Text(
-            _isMarketOpen
-                ? AppStrings.get(lang, 'market_open')
-                : AppStrings.get(lang, 'market_closed'),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-              color: _isMarketOpen ? Colors.green : Colors.orange,
-            ),
-          ),
-        ),
+        _marketStatusStrip(lang),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Expanded(
+              const Expanded(
                 child: Text(
-                  'Ranked by signal strength  •  $strongCount strong signals',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  'Watchlist',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
                 ),
               ),
-              Text('$scanned/${_stocks.length} scanned',
-                  style: const TextStyle(fontSize: 12)),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.gain.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '$strongCount strong signals',
+                  style: const TextStyle(
+                    color: AppTheme.gain,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-        const Divider(height: 1),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Ranked by signal strength  •  $scanned/${_stocks.length} scanned',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+        ),
+        const Divider(),
         Expanded(
           child: ListView.separated(
             itemCount: ranked.length,
-            separatorBuilder: (context, i) => const Divider(height: 1),
+            separatorBuilder: (context, i) => const Divider(),
             itemBuilder: (context, pos) {
               final index = ranked[pos];
               final stock = _stocks[index];
@@ -2066,78 +2247,139 @@ class _Stage5ScreenState extends State<Stage5Screen>
               final quote = stock.quote;
               final tier = _signalTier(stock);
               final bool actionable = tier <= 1;
+              final muted = Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.6);
 
-              String line1;
+              double change = 0.0;
+              if (quote != null && quote.previousClose > 0) {
+                change = ((quote.price - quote.previousClose) /
+                        quote.previousClose) *
+                    100.0;
+              }
+              final Color moveColor =
+                  change >= 0 ? AppTheme.gain : AppTheme.loss;
+              final Color signalColor =
+                  card == null ? Colors.grey : _signalColor(card.action);
+
+              Widget right;
               if (quote != null) {
-                final change = quote.previousClose > 0
-                    ? ((quote.price - quote.previousClose) /
-                            quote.previousClose) *
-                        100.0
-                    : 0.0;
-                line1 =
-                    'Rs ${quote.price.toStringAsFixed(2)}  (${change >= 0 ? '+' : ''}${change.toStringAsFixed(2)}%)';
-              } else if (stock.errorMessage.isNotEmpty) {
-                line1 = 'Could not load price';
+                right = Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Rs ${quote.price.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: moveColor,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${change >= 0 ? '+' : ''}${change.toStringAsFixed(2)}%',
+                      style: TextStyle(fontSize: 12, color: moveColor),
+                    ),
+                  ],
+                );
+              } else if (stock.isLoading) {
+                right = const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                );
               } else {
-                line1 = 'Loading...';
+                right = Text('No data',
+                    style: TextStyle(fontSize: 12, color: muted));
               }
 
-              String? line2;
-              if (card != null && actionable) {
-                final verb = card.action == 'BUY' ? 'Buy' : 'Sell';
-                line2 =
-                    '$verb near Rs ${card.entryPrice.toStringAsFixed(2)}  •  Stop Rs ${card.stopLoss.toStringAsFixed(2)}  •  Target Rs ${card.targetPrice.toStringAsFixed(2)}';
-              }
-
-              final color = card == null ? Colors.grey : _signalColor(card.action);
-
-              return ListTile(
+              return InkWell(
                 onTap: () => _openStock(index),
-                leading: CircleAvatar(
-                  radius: 15,
-                  backgroundColor: color.withValues(alpha: 0.2),
-                  child: Text('${pos + 1}',
-                      style: TextStyle(fontSize: 12, color: color)),
-                ),
-                title: Text(
-                  stock.name,
-                  style: TextStyle(
-                      fontWeight:
-                          actionable ? FontWeight.bold : FontWeight.normal),
-                ),
-                subtitle: Text(line2 == null ? line1 : '$line1\n$line2'),
-                isThreeLine: line2 != null,
-                trailing: card == null
-                    ? (stock.isLoading
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.error_outline, color: Colors.grey))
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
+                          SizedBox(
+                            width: 26,
                             child: Text(
-                              card.action,
-                              style: TextStyle(
-                                  color: color,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12),
+                              '${pos + 1}',
+                              style: TextStyle(fontSize: 12, color: muted),
                             ),
                           ),
-                          if (actionable)
-                            Text('${card.confidence} confidence',
-                                style: const TextStyle(fontSize: 10)),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  stock.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    if (card != null)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 7, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: signalColor.withValues(
+                                              alpha: 0.14),
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                        ),
+                                        child: Text(
+                                          card.action,
+                                          style: TextStyle(
+                                            color: signalColor,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ),
+                                    if (card != null && actionable) ...[
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '${card.confidence} confidence',
+                                        style: TextStyle(
+                                            fontSize: 11, color: muted),
+                                      ),
+                                    ] else if (card == null)
+                                      Text(
+                                        stock.symbol
+                                            .replaceAll('.NS', '')
+                                            .replaceAll('.BO', ''),
+                                        style: TextStyle(
+                                            fontSize: 11, color: muted),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          right,
                         ],
                       ),
+                      if (card != null && actionable)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 26, top: 8),
+                          child: Text(
+                            '${card.action == 'BUY' ? 'Buy' : 'Sell'} near Rs ${card.entryPrice.toStringAsFixed(2)}   Stop Rs ${card.stopLoss.toStringAsFixed(2)}   Target Rs ${card.targetPrice.toStringAsFixed(2)}',
+                            style: TextStyle(fontSize: 12, color: muted),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               );
             },
           ),
@@ -2157,44 +2399,63 @@ class _Stage5ScreenState extends State<Stage5Screen>
 
     return Column(
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          color: _isMarketOpen
-              ? Colors.green.withValues(alpha: 0.2)
-              : Colors.orange.withValues(alpha: 0.2),
-          child: Text(
-            _isMarketOpen
-                ? AppStrings.get(lang, 'market_open')
-                : AppStrings.get(lang, 'market_closed'),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-              color: _isMarketOpen ? Colors.green : Colors.orange,
-            ),
-          ),
-        ),
-        InkWell(
-          onTap: () => setState(() => _showStockDetail = false),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                const Icon(Icons.arrow_back, size: 18),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    selectedStock.name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+        _marketStatusStrip(lang),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                selectedStock.name,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              ),
+              Text(
+                selectedStock.symbol
+                    .replaceAll('.NS', '')
+                    .replaceAll('.BO', ''),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
-                const Text('Back to ranked list',
-                    style: TextStyle(fontSize: 12)),
+              ),
+              if (quote != null) ...[
+                const SizedBox(height: 8),
+                Builder(builder: (context) {
+                  final double ch = quote.previousClose > 0
+                      ? ((quote.price - quote.previousClose) /
+                              quote.previousClose) *
+                          100.0
+                      : 0.0;
+                  final Color mc = ch >= 0 ? AppTheme.gain : AppTheme.loss;
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Rs ${quote.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                            fontSize: 30, fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(width: 10),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                          '${ch >= 0 ? '+' : ''}${ch.toStringAsFixed(2)}%',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: mc,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
               ],
-            ),
+            ],
           ),
         ),
         const Divider(height: 1),
