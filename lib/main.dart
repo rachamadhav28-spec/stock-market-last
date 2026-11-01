@@ -3228,6 +3228,23 @@ class _Stage5ScreenState extends State<Stage5Screen>
         }
       },
       child: Scaffold(
+  floatingActionButton: Builder(
+    builder: (context) => FloatingActionButton.extended(
+      backgroundColor: Colors.greenAccent,
+      foregroundColor: Colors.black,
+      icon: const Icon(Icons.psychology),
+      label: const Text(
+        'Trader AI',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const TraderAgentScreen()),
+        );
+      },
+    ),
+  ),
       appBar: AppBar(
         leading: onDetail
             ? IconButton(
