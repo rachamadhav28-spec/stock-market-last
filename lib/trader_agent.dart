@@ -644,7 +644,7 @@ Live RSS feed is currently syncing or offline.
       if (res.statusCode == 200) {
         final body = await res.transform(utf8.decoder).join();
         final List<dynamic> list = json.decode(body);
-        return list.take(15).cast>().toList();
+        return list.take(15).cast<Map<String, dynamic>>().toList();
       }
     } catch (_) {}
     return [];
