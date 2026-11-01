@@ -68,4 +68,19 @@ elif groovy.exists():
 else:
     sys.exit("No android/app/build.gradle(.kts) found")
 
+# --- launcher icon (Penny Trader rupee + arrow) -----------------------------
+import shutil
+
+icons = pathlib.Path("android_icons")
+res = pathlib.Path("android/app/src/main/res")
+if icons.exists():
+    for density_dir in icons.iterdir():
+        target = res / density_dir.name
+        target.mkdir(parents=True, exist_ok=True)
+        for png in density_dir.glob("*.png"):
+            shutil.copy(png, target / png.name)
+    # Remove adaptive-icon overrides so the new PNG is used on every Android version.
+    for stale in res.glob("mipmap-anydpi*"):
+        shutil.rmtree(stale, ignore_errors=True)
+
 print("Android project patched")
