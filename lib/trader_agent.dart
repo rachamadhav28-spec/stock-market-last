@@ -751,7 +751,7 @@ class _TraderAgentScreenState extends State<TraderAgentScreen>
   double _monthlySip = 10000;
   int _investmentYears = 5;
 
-  List> _searchResults = [];
+  List<Map<String, dynamic>> _searchResults = [];
   bool _isSearchingScheme = false;
 
   final List<AgentMessage> _messages = [];
