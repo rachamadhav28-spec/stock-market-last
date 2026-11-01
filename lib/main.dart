@@ -17,7 +17,7 @@ const double kMinSafeVolume = 500000;
 const double kMinPennyPrice = 2.0;
 const double kMaxPennyPrice = 20.0;
 
-final List> kDefaultWatchlist = [
+final List<Map<String, String>> kDefaultWatchlist = [
   {'symbol': 'IDEA.NS', 'name': 'Vodafone Idea Ltd'},
   {'symbol': 'YESBANK.NS', 'name': 'Yes Bank Ltd'},
   {'symbol': 'JPPOWER.NS', 'name': 'Jaiprakash Power Ventures'},
