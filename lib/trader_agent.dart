@@ -634,7 +634,7 @@ Live RSS feed is currently syncing or offline.
   }
 
   /// Live Search across all 10,000+ Indian Mutual Funds via api.mfapi.in
-  Future<List>> searchAnyMutualFund(String query) async {
+  Future<List<Map<String, dynamic>>> searchAnyMutualFund(String query) async {
     if (query.trim().length < 3) return [];
     try {
       final uri = Uri.parse(
