@@ -8,7 +8,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'trader_agent.dart';
+
+import 'ai_agent.dart';
 
 // ============================================================================
 // === EASY CUSTOMIZATION CONFIG (Modify here or give to Claude) ===
@@ -547,7 +548,6 @@ class _PennyTraderAppState extends State<PennyTraderApp>
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-  builder: (context, child) => TraderAiOverlayWrapper(child: child!),
       title: 'Penny Stock Trader',
       debugShowCheckedModeBanner: false,
       themeMode: _darkOverride == null
@@ -607,7 +607,7 @@ class AppStrings {
         'skills_panel_title': 'View All 15 Skills Analysis',
         'nav_live': 'Live & Signals',
         'nav_results': 'Results Log',
-        'nav_chat': 'AI Tutor Chat',
+        'nav_chat': 'AI Agent',
         'log_signal_btn': 'Log Signal as Paper Trade',
         'sim_trade_btn': 'Practice Log: Simulate BUY',
         'results_title': 'Paper Trading Portfolio (Base: Rs 10,000)',
@@ -665,7 +665,7 @@ class AppStrings {
         'skills_panel_title': '15 నైపుణ్యాల విశ్లేషణ చూడండి',
         'nav_live': 'లైవ్',
         'nav_results': 'ఫలితాలు',
-        'nav_chat': 'AI చాట్',
+        'nav_chat': 'AI ఏజెంట్',
         'log_signal_btn': 'పేపర్ ట్రేడ్‌గా నమోదు చేయి',
         'sim_trade_btn': 'ప్రాక్టీస్ ట్రేడ్',
         'results_title': 'పేపర్ ట్రేడింగ్ ఫలితాలు (Rs 10,000)',
@@ -1363,6 +1363,23 @@ class YahooDataProvider implements MarketDataProvider {
 }
 
 class LocalPennyTraderAgent {
+  /// Stop distance and target distance (in Rs) for one stock.
+  ///
+  /// The stop is 1.5x the 5-minute ATR, but never less than 0.6% of the price.
+  /// The target aims for 2.2x the stop, but is capped at how far the stock has
+  /// actually moved today (the day's high-to-low range, at least 1% of price).
+  /// That way a quiet stock cannot be given a target it has no history of
+  /// reaching, and the signal turns into WAIT when the room is too small for
+  /// a 1:2 risk-reward.
+  static List<double> riskAndReward(StockQuote q) {
+    final double risk =
+        math.max(0.05, math.max(q.atr14 * 1.5, q.price * 0.006));
+    final double dayRange = math.max(0.0, q.dayHigh - q.dayLow);
+    final double reach = math.max(dayRange, q.price * 0.01);
+    final double reward = math.min(risk * 2.2, reach);
+    return [risk, reward];
+  }
+
   static ActionCardData evaluate({
     required StockItem stock,
     required StockQuote quote,
@@ -1401,15 +1418,16 @@ class LocalPennyTraderAgent {
         quote.rsi14 <= 48.0 &&
         quote.rsi14 >= 32.0;
 
-    final double stopDistance =
-        math.max(0.10, math.max(quote.atr14 * 1.5, quote.price * 0.015));
+    final List<double> levels = riskAndReward(quote);
+    final double stopDistance = levels[0];
+    final double targetDistance = levels[1];
 
     final double entry = quote.price;
     final bool leanBull = quote.price >= quote.vwap;
     final double stopLoss =
         leanBull ? (entry - stopDistance) : (entry + stopDistance);
     final double targetPrice =
-        leanBull ? (entry + stopDistance * 2.2) : (entry - stopDistance * 2.2);
+        leanBull ? (entry + targetDistance) : (entry - targetDistance);
 
     final double riskPerShare = (entry - stopLoss).abs();
     final double rewardPerShare = (targetPrice - entry).abs();
@@ -1641,12 +1659,28 @@ class _Stage5ScreenState extends State<Stage5Screen>
   bool _selectedFetching = false;
 
   List<PaperTradeRecord> _paperTrades = [];
-  final List<ChatMessage> _chatMessages = [];
-  final TextEditingController _chatController = TextEditingController();
+  late final TraderAiAgent _aiAgent;
+
+  /// Strong (High-confidence BUY/SELL) signals, shared with the AI agent.
+  List<String> _strongSignalLines() {
+    final ranked = _rankedIndices();
+    final lines = <String>[];
+    for (final i in ranked) {
+      final stock = _stocks[i];
+      final card = stock.actionCard;
+      if (card == null || _signalTier(stock) != 0) continue;
+      lines.add(
+          '- ${stock.name}: ${card.action} near Rs ${card.entryPrice.toStringAsFixed(2)}, stop Rs ${card.stopLoss.toStringAsFixed(2)}, target Rs ${card.targetPrice.toStringAsFixed(2)} (R:R ${card.riskRewardRatio})');
+      if (lines.length >= 8) break;
+    }
+    return lines;
+  }
 
   @override
   void initState() {
     super.initState();
+    _aiAgent = TraderAiAgent(stockSignals: _strongSignalLines);
+    _aiAgent.init();
     _stocks = kDefaultWatchlist
         .map((w) => StockItem(symbol: w['symbol']!, name: w['name']!))
         .toList();
@@ -1677,7 +1711,7 @@ class _Stage5ScreenState extends State<Stage5Screen>
     WidgetsBinding.instance.removeObserver(this);
     _activeStockTimer?.cancel();
     _sweepTimer?.cancel();
-    _chatController.dispose();
+    _aiAgent.dispose();
     super.dispose();
   }
 
@@ -1693,14 +1727,6 @@ class _Stage5ScreenState extends State<Stage5Screen>
     if (!mounted) return;
     setState(() {
       _paperTrades = loaded;
-      if (_chatMessages.isEmpty) {
-        final nowStr = DateFormat('hh:mm a').format(DateTime.now());
-        _chatMessages.add(ChatMessage(
-          sender: 'tutor',
-          text: AppStrings.get(widget.language, 'chat_welcome'),
-          time: nowStr,
-        ));
-      }
     });
   }
 
@@ -1869,13 +1895,13 @@ class _Stage5ScreenState extends State<Stage5Screen>
             : 'BUY');
 
     final double entry = card.entryPrice;
-    final double slDist = (entry - card.stopLoss).abs();
-    final double safeDist = slDist > 0.02 ? slDist : math.max(0.10, entry * 0.015);
+    final List<double> levels = LocalPennyTraderAgent.riskAndReward(quote);
+    final double safeDist = levels[0];
     final double sl =
         tradeAction == 'BUY' ? (entry - safeDist) : (entry + safeDist);
     final double target = tradeAction == 'BUY'
-        ? (entry + safeDist * 2.2)
-        : (entry - safeDist * 2.2);
+        ? (entry + levels[1])
+        : (entry - levels[1]);
     final int shares = math.max(
         1,
         math.min((kMaxRiskPerTrade / safeDist).floor(),
@@ -1946,49 +1972,6 @@ class _Stage5ScreenState extends State<Stage5Screen>
       _paperTrades.clear();
     });
     await _savePaperTrades();
-  }
-
-  void _sendChatMessage(String userQuery) {
-    if (userQuery.trim().isEmpty) return;
-    final nowStr = DateFormat('hh:mm a').format(DateTime.now());
-    final stock = _stocks[_selectedIndex];
-    final quote = stock.quote;
-
-    setState(() {
-      _chatMessages.add(ChatMessage(sender: 'user', text: userQuery, time: nowStr));
-      _chatController.clear();
-    });
-
-    Timer(const Duration(milliseconds: 300), () {
-      String reply = '';
-      final q = userQuery.toLowerCase();
-      final isTE = widget.language == 'TE';
-
-      if (q.contains('stop') || q.contains('loss') || q.contains('స్టాప్')) {
-        reply = isTE
-            ? 'స్టాప్-లాస్ అంటే మీ నష్టాన్ని పరిమితం చేసే భద్రతా వలయం. మా యాప్‌లో ప్రతి ట్రేడ్‌కు గరిష్ట నష్టం Rs 100 గా సెట్ చేయబడింది.'
-            : 'Stop-Loss is your pre-defined safety exit. In this app, your risk per trade is strictly capped at Rs 100 (1% of Rs 10,000 capital).';
-      } else if (q.contains('vwap') || q.contains('rsi')) {
-        reply = isTE
-            ? 'VWAP అంటే వాల్యూమ్-వెయిటెడ్ వరేజ్ ధర (Rs ${quote?.vwap.toStringAsFixed(2)}). RSI అనేది మొమెంటం (ప్రస్తుత RSI: ${quote?.rsi14.toStringAsFixed(1)}).'
-            : 'VWAP is Volume Weighted Average Price (Rs ${quote?.vwap.toStringAsFixed(2)}). RSI measures momentum (current RSI: ${quote?.rsi14.toStringAsFixed(1)}).';
-      } else if (q.contains('profit') || q.contains('win') || q.contains('లాభం')) {
-        reply = isTE
-            ? 'పేపర్ ట్రేడింగ్‌లో మీరు వర్చువల్ రూపీస్‌తో లాభాలను పరీక్షిస్తున్నారు. ఇది నిజమైన డబ్బు కాదు, కేవలం అభ్యాసం మాత్రమే!'
-            : 'Paper trading lets you test strategies with virtual money (Rs 10,000 base). Zero financial risk!';
-      } else {
-        reply = isTE
-            ? '${stock.symbol} ప్రస్తుత ధర Rs ${quote?.price.toStringAsFixed(2)}. 15-నైపుణ్యాల ఏజెంట్ సిగ్నల్ ప్రకారం ${stock.actionCard?.action} చేయమని సూచిస్తోంది.'
-            : 'For ${stock.symbol} (LTP Rs ${quote?.price.toStringAsFixed(2)}), our 15-skill agent recommends ${stock.actionCard?.action}. Check the Live tab for exact position sizing!';
-      }
-
-      if (mounted) {
-        setState(() {
-          _chatMessages.add(ChatMessage(
-              sender: 'tutor', text: reply, time: DateFormat('hh:mm a').format(DateTime.now())));
-        });
-      }
-    });
   }
 
   void _reEvaluateAllCardsForLanguage(String newLang) {
@@ -3111,109 +3094,6 @@ class _Stage5ScreenState extends State<Stage5Screen>
     );
   }
 
-  Widget _buildAiChatTab(String lang) {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.support_agent, color: Colors.blue),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    AppStrings.get(lang, 'chat_title'),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _chatMessages.length,
-              itemBuilder: (context, index) {
-                final msg = _chatMessages[index];
-                final isUser = msg.sender == 'user';
-                return Align(
-                  alignment:
-                      isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.all(12),
-                    constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.78),
-                    decoration: BoxDecoration(
-                      color: isUser
-                          ? Colors.blue.shade700
-                          : (widget.isDarkMode
-                              ? Colors.grey.shade800
-                              : Colors.grey.shade200),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          msg.text,
-                          style: TextStyle(
-                            color: isUser
-                                ? Colors.white
-                                : (widget.isDarkMode
-                                    ? Colors.white
-                                    : Colors.black87),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          msg.time,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: isUser ? Colors.white70 : Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _chatController,
-                  decoration: InputDecoration(
-                    hintText: AppStrings.get(lang, 'chat_hint'),
-                    border: const OutlineInputBorder(),
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  onSubmitted: _sendChatMessage,
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton.filled(
-                onPressed: () => _sendChatMessage(_chatController.text),
-                icon: const Icon(Icons.send),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final lang = widget.language;
@@ -3229,23 +3109,6 @@ class _Stage5ScreenState extends State<Stage5Screen>
         }
       },
       child: Scaffold(
-  floatingActionButton: Builder(
-    builder: (context) => FloatingActionButton.extended(
-      backgroundColor: Colors.greenAccent,
-      foregroundColor: Colors.black,
-      icon: const Icon(Icons.psychology),
-      label: const Text(
-        'Trader AI',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const TraderAgentScreen()),
-        );
-      },
-    ),
-  ),
       appBar: AppBar(
         leading: onDetail
             ? IconButton(
@@ -3282,7 +3145,7 @@ class _Stage5ScreenState extends State<Stage5Screen>
               : _buildRankedHomeTab(lang))
           : (_bottomTabIndex == 1
               ? _buildResultsTab(lang)
-              : _buildAiChatTab(lang)),
+              : AiAgentTab(agent: _aiAgent)),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _bottomTabIndex,
         onDestinationSelected: (idx) {
