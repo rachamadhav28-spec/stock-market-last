@@ -1643,8 +1643,6 @@ class _Stage5ScreenState extends State<Stage5Screen>
   bool _selectedFetching = false;
 
   List<PaperTradeRecord> _paperTrades = [];
-  final List<ChatMessage> _chatMessages = [];
-  final TextEditingController _chatController = TextEditingController();
   late final TraderAiAgent _aiAgent;
 
   /// Strong (High-confidence BUY/SELL) signals, shared with the AI agent.
@@ -1697,7 +1695,6 @@ class _Stage5ScreenState extends State<Stage5Screen>
     WidgetsBinding.instance.removeObserver(this);
     _activeStockTimer?.cancel();
     _sweepTimer?.cancel();
-    _chatController.dispose();
     _aiAgent.dispose();
     super.dispose();
   }
@@ -1714,14 +1711,6 @@ class _Stage5ScreenState extends State<Stage5Screen>
     if (!mounted) return;
     setState(() {
       _paperTrades = loaded;
-      if (_chatMessages.isEmpty) {
-        final nowStr = DateFormat('hh:mm a').format(DateTime.now());
-        _chatMessages.add(ChatMessage(
-          sender: 'tutor',
-          text: AppStrings.get(widget.language, 'chat_welcome'),
-          time: nowStr,
-        ));
-      }
     });
   }
 
@@ -1967,49 +1956,6 @@ class _Stage5ScreenState extends State<Stage5Screen>
       _paperTrades.clear();
     });
     await _savePaperTrades();
-  }
-
-  void _sendChatMessage(String userQuery) {
-    if (userQuery.trim().isEmpty) return;
-    final nowStr = DateFormat('hh:mm a').format(DateTime.now());
-    final stock = _stocks[_selectedIndex];
-    final quote = stock.quote;
-
-    setState(() {
-      _chatMessages.add(ChatMessage(sender: 'user', text: userQuery, time: nowStr));
-      _chatController.clear();
-    });
-
-    Timer(const Duration(milliseconds: 300), () {
-      String reply = '';
-      final q = userQuery.toLowerCase();
-      final isTE = widget.language == 'TE';
-
-      if (q.contains('stop') || q.contains('loss') || q.contains('స్టాప్')) {
-        reply = isTE
-            ? 'స్టాప్-లాస్ అంటే మీ నష్టాన్ని పరిమితం చేసే భద్రతా వలయం. మా యాప్‌లో ప్రతి ట్రేడ్‌కు గరిష్ట నష్టం Rs 100 గా సెట్ చేయబడింది.'
-            : 'Stop-Loss is your pre-defined safety exit. In this app, your risk per trade is strictly capped at Rs 100 (1% of Rs 10,000 capital).';
-      } else if (q.contains('vwap') || q.contains('rsi')) {
-        reply = isTE
-            ? 'VWAP అంటే వాల్యూమ్-వెయిటెడ్ వరేజ్ ధర (Rs ${quote?.vwap.toStringAsFixed(2)}). RSI అనేది మొమెంటం (ప్రస్తుత RSI: ${quote?.rsi14.toStringAsFixed(1)}).'
-            : 'VWAP is Volume Weighted Average Price (Rs ${quote?.vwap.toStringAsFixed(2)}). RSI measures momentum (current RSI: ${quote?.rsi14.toStringAsFixed(1)}).';
-      } else if (q.contains('profit') || q.contains('win') || q.contains('లాభం')) {
-        reply = isTE
-            ? 'పేపర్ ట్రేడింగ్‌లో మీరు వర్చువల్ రూపీస్‌తో లాభాలను పరీక్షిస్తున్నారు. ఇది నిజమైన డబ్బు కాదు, కేవలం అభ్యాసం మాత్రమే!'
-            : 'Paper trading lets you test strategies with virtual money (Rs 10,000 base). Zero financial risk!';
-      } else {
-        reply = isTE
-            ? '${stock.symbol} ప్రస్తుత ధర Rs ${quote?.price.toStringAsFixed(2)}. 15-నైపుణ్యాల ఏజెంట్ సిగ్నల్ ప్రకారం ${stock.actionCard?.action} చేయమని సూచిస్తోంది.'
-            : 'For ${stock.symbol} (LTP Rs ${quote?.price.toStringAsFixed(2)}), our 15-skill agent recommends ${stock.actionCard?.action}. Check the Live tab for exact position sizing!';
-      }
-
-      if (mounted) {
-        setState(() {
-          _chatMessages.add(ChatMessage(
-              sender: 'tutor', text: reply, time: DateFormat('hh:mm a').format(DateTime.now())));
-        });
-      }
-    });
   }
 
   void _reEvaluateAllCardsForLanguage(String newLang) {
@@ -3126,109 +3072,6 @@ class _Stage5ScreenState extends State<Stage5Screen>
                       );
                     },
                   ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAiChatTab(String lang) {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.support_agent, color: Colors.blue),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    AppStrings.get(lang, 'chat_title'),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _chatMessages.length,
-              itemBuilder: (context, index) {
-                final msg = _chatMessages[index];
-                final isUser = msg.sender == 'user';
-                return Align(
-                  alignment:
-                      isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.all(12),
-                    constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.78),
-                    decoration: BoxDecoration(
-                      color: isUser
-                          ? Colors.blue.shade700
-                          : (widget.isDarkMode
-                              ? Colors.grey.shade800
-                              : Colors.grey.shade200),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          msg.text,
-                          style: TextStyle(
-                            color: isUser
-                                ? Colors.white
-                                : (widget.isDarkMode
-                                    ? Colors.white
-                                    : Colors.black87),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          msg.time,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: isUser ? Colors.white70 : Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _chatController,
-                  decoration: InputDecoration(
-                    hintText: AppStrings.get(lang, 'chat_hint'),
-                    border: const OutlineInputBorder(),
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  onSubmitted: _sendChatMessage,
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton.filled(
-                onPressed: () => _sendChatMessage(_chatController.text),
-                icon: const Icon(Icons.send),
-              ),
-            ],
           ),
         ],
       ),

@@ -21,55 +21,55 @@ enum FundHorizon { short, medium, long }
 // Fund universe: popular direct-growth funds per horizon. Each name is looked
 // up on mfapi.in at runtime, so scheme codes never go out of date.
 // ---------------------------------------------------------------------------
-class _FundSeed {
+class FundSeed {
   final String query;
   final FundHorizon group;
-  const _FundSeed(this.query, this.group);
+  const FundSeed(this.query, this.group);
 }
 
-const List<_FundSeed> _kFundSeeds = [
+const List<FundSeed> _kFundSeeds = [
   // Short term: low-risk debt
-  _FundSeed('HDFC Liquid Fund', FundHorizon.short),
-  _FundSeed('ICICI Prudential Liquid Fund', FundHorizon.short),
-  _FundSeed('SBI Liquid Fund', FundHorizon.short),
-  _FundSeed('Axis Liquid Fund', FundHorizon.short),
-  _FundSeed('Nippon India Liquid Fund', FundHorizon.short),
-  _FundSeed('Aditya Birla Sun Life Liquid Fund', FundHorizon.short),
-  _FundSeed('HDFC Money Market Fund', FundHorizon.short),
-  _FundSeed('ICICI Prudential Money Market Fund', FundHorizon.short),
-  _FundSeed('HDFC Ultra Short Term Fund', FundHorizon.short),
-  _FundSeed('SBI Magnum Ultra Short Duration Fund', FundHorizon.short),
-  _FundSeed('Aditya Birla Sun Life Low Duration Fund', FundHorizon.short),
+  FundSeed('HDFC Liquid Fund', FundHorizon.short),
+  FundSeed('ICICI Prudential Liquid Fund', FundHorizon.short),
+  FundSeed('SBI Liquid Fund', FundHorizon.short),
+  FundSeed('Axis Liquid Fund', FundHorizon.short),
+  FundSeed('Nippon India Liquid Fund', FundHorizon.short),
+  FundSeed('Aditya Birla Sun Life Liquid Fund', FundHorizon.short),
+  FundSeed('HDFC Money Market Fund', FundHorizon.short),
+  FundSeed('ICICI Prudential Money Market Fund', FundHorizon.short),
+  FundSeed('HDFC Ultra Short Term Fund', FundHorizon.short),
+  FundSeed('SBI Magnum Ultra Short Duration Fund', FundHorizon.short),
+  FundSeed('Aditya Birla Sun Life Low Duration Fund', FundHorizon.short),
   // Medium term: short-duration debt and hybrid
-  _FundSeed('HDFC Balanced Advantage Fund', FundHorizon.medium),
-  _FundSeed('ICICI Prudential Balanced Advantage Fund', FundHorizon.medium),
-  _FundSeed('SBI Equity Hybrid Fund', FundHorizon.medium),
-  _FundSeed('ICICI Prudential Equity & Debt Fund', FundHorizon.medium),
-  _FundSeed('Kotak Equity Hybrid Fund', FundHorizon.medium),
-  _FundSeed('HDFC Hybrid Equity Fund', FundHorizon.medium),
-  _FundSeed('HDFC Short Term Debt Fund', FundHorizon.medium),
-  _FundSeed('ICICI Prudential Corporate Bond Fund', FundHorizon.medium),
-  _FundSeed('HDFC Corporate Bond Fund', FundHorizon.medium),
-  _FundSeed('SBI Corporate Bond Fund', FundHorizon.medium),
-  _FundSeed('Axis Short Term Fund', FundHorizon.medium),
-  _FundSeed('Kotak Equity Savings Fund', FundHorizon.medium),
+  FundSeed('HDFC Balanced Advantage Fund', FundHorizon.medium),
+  FundSeed('ICICI Prudential Balanced Advantage Fund', FundHorizon.medium),
+  FundSeed('SBI Equity Hybrid Fund', FundHorizon.medium),
+  FundSeed('ICICI Prudential Equity & Debt Fund', FundHorizon.medium),
+  FundSeed('Kotak Equity Hybrid Fund', FundHorizon.medium),
+  FundSeed('HDFC Hybrid Equity Fund', FundHorizon.medium),
+  FundSeed('HDFC Short Term Debt Fund', FundHorizon.medium),
+  FundSeed('ICICI Prudential Corporate Bond Fund', FundHorizon.medium),
+  FundSeed('HDFC Corporate Bond Fund', FundHorizon.medium),
+  FundSeed('SBI Corporate Bond Fund', FundHorizon.medium),
+  FundSeed('Axis Short Term Fund', FundHorizon.medium),
+  FundSeed('Kotak Equity Savings Fund', FundHorizon.medium),
   // Long term: equity
-  _FundSeed('Parag Parikh Flexi Cap Fund', FundHorizon.long),
-  _FundSeed('UTI Nifty 50 Index Fund', FundHorizon.long),
-  _FundSeed('HDFC Index Fund Nifty 50 Plan', FundHorizon.long),
-  _FundSeed('HDFC Flexi Cap Fund', FundHorizon.long),
-  _FundSeed('SBI Bluechip Fund', FundHorizon.long),
-  _FundSeed('ICICI Prudential Bluechip Fund', FundHorizon.long),
-  _FundSeed('Axis Bluechip Fund', FundHorizon.long),
-  _FundSeed('Mirae Asset Large Cap Fund', FundHorizon.long),
-  _FundSeed('Nippon India Small Cap Fund', FundHorizon.long),
-  _FundSeed('SBI Small Cap Fund', FundHorizon.long),
-  _FundSeed('Axis Small Cap Fund', FundHorizon.long),
-  _FundSeed('HDFC Mid-Cap Opportunities Fund', FundHorizon.long),
-  _FundSeed('Kotak Emerging Equity Fund', FundHorizon.long),
-  _FundSeed('Motilal Oswal Midcap Fund', FundHorizon.long),
-  _FundSeed('ICICI Prudential Nifty Next 50 Index Fund', FundHorizon.long),
-  _FundSeed('Axis ELSS Tax Saver Fund', FundHorizon.long),
+  FundSeed('Parag Parikh Flexi Cap Fund', FundHorizon.long),
+  FundSeed('UTI Nifty 50 Index Fund', FundHorizon.long),
+  FundSeed('HDFC Index Fund Nifty 50 Plan', FundHorizon.long),
+  FundSeed('HDFC Flexi Cap Fund', FundHorizon.long),
+  FundSeed('SBI Bluechip Fund', FundHorizon.long),
+  FundSeed('ICICI Prudential Bluechip Fund', FundHorizon.long),
+  FundSeed('Axis Bluechip Fund', FundHorizon.long),
+  FundSeed('Mirae Asset Large Cap Fund', FundHorizon.long),
+  FundSeed('Nippon India Small Cap Fund', FundHorizon.long),
+  FundSeed('SBI Small Cap Fund', FundHorizon.long),
+  FundSeed('Axis Small Cap Fund', FundHorizon.long),
+  FundSeed('HDFC Mid-Cap Opportunities Fund', FundHorizon.long),
+  FundSeed('Kotak Emerging Equity Fund', FundHorizon.long),
+  FundSeed('Motilal Oswal Midcap Fund', FundHorizon.long),
+  FundSeed('ICICI Prudential Nifty Next 50 Index Fund', FundHorizon.long),
+  FundSeed('Axis ELSS Tax Saver Fund', FundHorizon.long),
 ];
 
 int riskTierFor(String category) {
@@ -302,7 +302,7 @@ class MfService {
     return n.trim();
   }
 
-  static Future<FundMetrics?> loadFund(_FundSeed seed) async {
+  static Future<FundMetrics?> loadFund(FundSeed seed) async {
     final code = await _findDirectGrowthCode(seed.query);
     if (code == null) return null;
 
@@ -736,7 +736,7 @@ class TraderAiAgent extends ChangeNotifier {
   }
 
   String _helpText({bool short = false}) {
-    final base = 'I am your trading and mutual fund assistant.\n\n'
+    const base = 'I am your trading and mutual fund assistant.\n\n'
         'I can:\n'
         '- Pick mutual funds for short, medium or long term (ranked by returns and risk)\n'
         '- Show the latest market news with a mood score\n'
