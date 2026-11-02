@@ -1363,6 +1363,23 @@ class YahooDataProvider implements MarketDataProvider {
 }
 
 class LocalPennyTraderAgent {
+  /// Stop distance and target distance (in Rs) for one stock.
+  ///
+  /// The stop is 1.5x the 5-minute ATR, but never less than 0.6% of the price.
+  /// The target aims for 2.2x the stop, but is capped at how far the stock has
+  /// actually moved today (the day's high-to-low range, at least 1% of price).
+  /// That way a quiet stock cannot be given a target it has no history of
+  /// reaching, and the signal turns into WAIT when the room is too small for
+  /// a 1:2 risk-reward.
+  static List<double> riskAndReward(StockQuote q) {
+    final double risk =
+        math.max(0.05, math.max(q.atr14 * 1.5, q.price * 0.006));
+    final double dayRange = math.max(0.0, q.dayHigh - q.dayLow);
+    final double reach = math.max(dayRange, q.price * 0.01);
+    final double reward = math.min(risk * 2.2, reach);
+    return [risk, reward];
+  }
+
   static ActionCardData evaluate({
     required StockItem stock,
     required StockQuote quote,
@@ -1401,15 +1418,16 @@ class LocalPennyTraderAgent {
         quote.rsi14 <= 48.0 &&
         quote.rsi14 >= 32.0;
 
-    final double stopDistance =
-        math.max(0.10, math.max(quote.atr14 * 1.5, quote.price * 0.015));
+    final List<double> levels = riskAndReward(quote);
+    final double stopDistance = levels[0];
+    final double targetDistance = levels[1];
 
     final double entry = quote.price;
     final bool leanBull = quote.price >= quote.vwap;
     final double stopLoss =
         leanBull ? (entry - stopDistance) : (entry + stopDistance);
     final double targetPrice =
-        leanBull ? (entry + stopDistance * 2.2) : (entry - stopDistance * 2.2);
+        leanBull ? (entry + targetDistance) : (entry - targetDistance);
 
     final double riskPerShare = (entry - stopLoss).abs();
     final double rewardPerShare = (targetPrice - entry).abs();
@@ -1877,13 +1895,13 @@ class _Stage5ScreenState extends State<Stage5Screen>
             : 'BUY');
 
     final double entry = card.entryPrice;
-    final double slDist = (entry - card.stopLoss).abs();
-    final double safeDist = slDist > 0.02 ? slDist : math.max(0.10, entry * 0.015);
+    final List<double> levels = LocalPennyTraderAgent.riskAndReward(quote);
+    final double safeDist = levels[0];
     final double sl =
         tradeAction == 'BUY' ? (entry - safeDist) : (entry + safeDist);
     final double target = tradeAction == 'BUY'
-        ? (entry + safeDist * 2.2)
-        : (entry - safeDist * 2.2);
+        ? (entry + levels[1])
+        : (entry - levels[1]);
     final int shares = math.max(
         1,
         math.min((kMaxRiskPerTrade / safeDist).floor(),
