@@ -8,7 +8,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'trader_agent.dart';
 
 import 'ai_agent.dart';
 
@@ -549,7 +548,6 @@ class _PennyTraderAppState extends State<PennyTraderApp>
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-  builder: (context, child) => TraderAiOverlayWrapper(child: child!),
       title: 'Penny Stock Trader',
       debugShowCheckedModeBanner: false,
       themeMode: _darkOverride == null
@@ -3093,23 +3091,6 @@ class _Stage5ScreenState extends State<Stage5Screen>
         }
       },
       child: Scaffold(
-  floatingActionButton: Builder(
-    builder: (context) => FloatingActionButton.extended(
-      backgroundColor: Colors.greenAccent,
-      foregroundColor: Colors.black,
-      icon: const Icon(Icons.psychology),
-      label: const Text(
-        'Trader AI',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const TraderAgentScreen()),
-        );
-      },
-    ),
-  ),
       appBar: AppBar(
         leading: onDetail
             ? IconButton(
