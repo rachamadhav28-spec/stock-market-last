@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'trader_agent.dart';
 
+import 'ai_agent.dart';
+
 // ============================================================================
 // === EASY CUSTOMIZATION CONFIG (Modify here or give to Claude) ===
 // ============================================================================
@@ -607,7 +609,7 @@ class AppStrings {
         'skills_panel_title': 'View All 15 Skills Analysis',
         'nav_live': 'Live & Signals',
         'nav_results': 'Results Log',
-        'nav_chat': 'AI Tutor Chat',
+        'nav_chat': 'AI Agent',
         'log_signal_btn': 'Log Signal as Paper Trade',
         'sim_trade_btn': 'Practice Log: Simulate BUY',
         'results_title': 'Paper Trading Portfolio (Base: Rs 10,000)',
@@ -665,7 +667,7 @@ class AppStrings {
         'skills_panel_title': '15 నైపుణ్యాల విశ్లేషణ చూడండి',
         'nav_live': 'లైవ్',
         'nav_results': 'ఫలితాలు',
-        'nav_chat': 'AI చాట్',
+        'nav_chat': 'AI ఏజెంట్',
         'log_signal_btn': 'పేపర్ ట్రేడ్‌గా నమోదు చేయి',
         'sim_trade_btn': 'ప్రాక్టీస్ ట్రేడ్',
         'results_title': 'పేపర్ ట్రేడింగ్ ఫలితాలు (Rs 10,000)',
@@ -1643,10 +1645,28 @@ class _Stage5ScreenState extends State<Stage5Screen>
   List<PaperTradeRecord> _paperTrades = [];
   final List<ChatMessage> _chatMessages = [];
   final TextEditingController _chatController = TextEditingController();
+  late final TraderAiAgent _aiAgent;
+
+  /// Strong (High-confidence BUY/SELL) signals, shared with the AI agent.
+  List<String> _strongSignalLines() {
+    final ranked = _rankedIndices();
+    final lines = <String>[];
+    for (final i in ranked) {
+      final stock = _stocks[i];
+      final card = stock.actionCard;
+      if (card == null || _signalTier(stock) != 0) continue;
+      lines.add(
+          '- ${stock.name}: ${card.action} near Rs ${card.entryPrice.toStringAsFixed(2)}, stop Rs ${card.stopLoss.toStringAsFixed(2)}, target Rs ${card.targetPrice.toStringAsFixed(2)} (R:R ${card.riskRewardRatio})');
+      if (lines.length >= 8) break;
+    }
+    return lines;
+  }
 
   @override
   void initState() {
     super.initState();
+    _aiAgent = TraderAiAgent(stockSignals: _strongSignalLines);
+    _aiAgent.init();
     _stocks = kDefaultWatchlist
         .map((w) => StockItem(symbol: w['symbol']!, name: w['name']!))
         .toList();
@@ -1678,6 +1698,7 @@ class _Stage5ScreenState extends State<Stage5Screen>
     _activeStockTimer?.cancel();
     _sweepTimer?.cancel();
     _chatController.dispose();
+    _aiAgent.dispose();
     super.dispose();
   }
 
@@ -3282,7 +3303,7 @@ class _Stage5ScreenState extends State<Stage5Screen>
               : _buildRankedHomeTab(lang))
           : (_bottomTabIndex == 1
               ? _buildResultsTab(lang)
-              : _buildAiChatTab(lang)),
+              : AiAgentTab(agent: _aiAgent)),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _bottomTabIndex,
         onDestinationSelected: (idx) {
